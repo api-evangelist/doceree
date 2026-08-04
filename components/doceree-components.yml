@@ -1,0 +1,81 @@
+generated: '2026-08-04'
+method: searched
+source: >-
+  https://servedbydoceree.doceree.com/script/render-header.js,
+  https://github.com/doceree/ios-sdk,
+  https://support.doceree.com/hc/en-us,
+  https://docs.prebid.org/dev-docs/bidders/doceree.html
+note: >-
+  Doceree's integration model is client-side embed rather than server-side API
+  consumption: publishers drop a hosted script or a native ad view into their
+  page/app and Doceree renders the HCP-targeted creative. These are the
+  embeddable surfaces, distinct from the libraries catalogued in
+  packages/doceree-packages.yml.
+families:
+- family: web
+  name: Doceree Publisher Tag (DPT)
+  description: >-
+    Hosted ad-tagging library for the "Doceree for Publisher" program. Added to
+    the page <head>, it initializes a first-party Doceree cookie, reads a
+    page-provided `hcpContext` object to build the HCP identity payload, calls
+    GET /v1/doceree-init on the bidder host to resolve a platform UID, fires
+    identity sync pixels (/v1/init, /v1/initliveintent), and dynamically builds
+    ad requests for declared ad slots.
+  loader: https://servedbydoceree.doceree.com/script/render-header.js
+  integration: <script> tag in <head>; ad slots declared as page elements
+  globals_observed: [initDoceree, setDocereeContext, initializeDocereeCookie,
+    getPlatformUid, docereeLogMessage]
+  evidence:
+    fetched: '2026-08-04'
+    url: https://servedbydoceree.doceree.com/script/render-header.js
+    http_status: 200
+- family: web
+  name: Prebid.js header-bidding adapter
+  description: >-
+    First-party Prebid.js bidder module (bidder code `doceree`) that lets a
+    publisher's existing Prebid wrapper request Doceree demand alongside other
+    bidders. Configured through `doceree.user` and `doceree.context` in
+    Prebid config; emits ad-server key values hb_pb_doceree, hb_bidder_doceree,
+    hb_adid_doceree, hb_size_doceree and siblings.
+  params: [placementId (required), publisherUrl, gdpr, gdprConsent]
+  media_types: [banner]
+  docs: https://docs.prebid.org/dev-docs/bidders/doceree.html
+- family: ios
+  name: DocereeAdView / DocereeAdViewRichMediaBanner
+  description: >-
+    Native iOS ad view components shipped in the open-source Doceree iOS SDK.
+    DocereeAdView renders a standard banner; DocereeAdViewRichMediaBanner
+    renders MRAID 2.0 rich media. Supporting components include
+    DocereeAdRequest, DocereeAdViewDelegate, DocereeMobileAds (SDK entry point
+    and signpost toggle), AdConsentUIView (consent surface) and an ad-block
+    feedback UI backed by POST /saveadblockinfo.
+  ad_sizes: [BANNER, FULLSIZE, MEDIUMRECTANGLE, LEADERBOARD, LARGEBANNER,
+    SMALLBANNER]
+  event_types: [CPC, CPM]
+  source: https://github.com/doceree/ios-sdk
+  license: MIT
+- family: android
+  name: Doceree Ads SDK (Android) ad views
+  description: >-
+    Android ad view components documented in the Doceree help center
+    (App-based integrations (Android) — Platform Integration). Integration is
+    a JitPack Gradle dependency followed by a DocereeAdsSdk initialize() call
+    in the Application class, then placement of ad views. The article is
+    sign-in gated, so component class names are not recorded.
+  docs: https://support.doceree.com/hc/en-us/articles/360052155494-Platform-Integration
+  status: documented-gated
+- family: web
+  name: Point-of-care / EHR ad slot integration
+  description: >-
+    Doceree's point-of-care and EHR integration pattern: partner platforms embed
+    Doceree integration code between designated HTML tags on their pages and
+    declare ad slots, with point-of-care context posted to
+    POST /v1/savePOCdata and DMD data to POST /v1/saveDMDInfo.
+  docs: https://support.doceree.com/hc/en-us/articles/360061492814-Point-of-Care-US-Platform-Integration
+  status: documented-gated
+gaps:
+- The Android and point-of-care integration articles return HTTP 403 to
+  anonymous readers, so the component surface for those two families is known
+  only by title.
+- No versioned, published component reference (props/attributes/events) exists
+  for the web tag.

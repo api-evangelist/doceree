@@ -42,5 +42,37 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Doceree is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
-- https://forgeglobal.com/doceree_stock/
+Doceree Inc. is a US healthcare marketing technology company (Short Hills, New Jersey) operating a
+global network of physician-only platforms for programmatic messaging and point-of-care advertising
+to healthcare professionals. Its channels span HCP programmatic, point-of-care, EHR, email, SMS,
+co-pay/affordability and account-based messaging, backed by a proprietary HCP identity-resolution
+graph.
+
+## Public API surface
+
+Doceree's public, machine-readable surface is an ad-tech one rather than a general-purpose developer
+API. There is **no OpenAPI, AsyncAPI, GraphQL schema, MCP server or A2A agent card** at any host
+probed on 2026-08-04. What is public:
+
+| Surface | Where |
+|---|---|
+| Bidder / ad request API | `https://bidder.doceree.com` — `GET /v1/adrequest` |
+| Tracking / beacon API | `https://tracking.doceree.com` — `GET /v1/hbTimeout`, `GET /v1/hbBidWon` |
+| Doceree Publisher Tag | https://servedbydoceree.doceree.com/script/render-header.js |
+| Prebid.js header-bidding adapter | bidder code `doceree`, IAB Europe GVL ID 1063 |
+| iOS ad SDK | CocoaPods `DocereeAdSdk`; sources at https://github.com/doceree/ios-sdk (MIT) |
+| Android ad SDK | documented via JitPack; coordinates behind a sign-in-gated support article |
+
+The fullest public parameter reference is the
+[Prebid.js bidder documentation](https://docs.prebid.org/dev-docs/bidders/doceree.html).
+
+## Links
+
+- Website — https://doceree.com/
+- Publishers / integration — https://doceree.com/publishers
+- Support / help center — https://support.doceree.com/hc/en-us
+- Trust & compliance — https://doceree.com/trust
+- Blog — https://blog.doceree.com/
+- GitHub — https://github.com/doceree
+- Exchange login — https://exchange.doceree.com/login
+- Harvest lead (secondary market) — https://forgeglobal.com/doceree_stock/

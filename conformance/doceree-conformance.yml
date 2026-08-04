@@ -1,0 +1,112 @@
+generated: '2026-08-04'
+method: searched
+source: >-
+  https://docs.prebid.org/dev-docs/bidders/doceree.html,
+  https://doceree.com/ (compliance badge row),
+  https://doceree.com/trust,
+  https://github.com/doceree/ios-sdk
+note: >-
+  Doceree is an ad-tech provider, so its conformance surface is the IAB /
+  Prebid stack plus healthcare privacy posture rather than API-design
+  standards. Nothing below is asserted from an OpenAPI, because Doceree
+  publishes none.
+standards:
+- id: prebid-js-bid-adapter
+  conforms: true
+  version: Prebid.js module
+  evidence: >-
+    First-party bid adapter merged in the Prebid.js repository with bidder code
+    `doceree`; documented at docs.prebid.org/dev-docs/bidders/doceree.html.
+    Supported media type: banner. Prebid Server adapter: no.
+  source: https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+- id: iab-europe-tcf
+  conforms: true
+  version: TCF (Transparency & Consent Framework)
+  gvl_id: 1063
+  evidence: >-
+    Registered on the IAB Europe Global Vendor List as vendor 1063; the Prebid
+    bidder page records "TCF-EU Support: Yes"; the adapter enforces presence of
+    a gdpr_consent string when gdpr == 1.
+  source: https://docs.prebid.org/dev-docs/bidders/doceree.html
+- id: iab-mraid
+  conforms: true
+  version: '2.0'
+  evidence: >-
+    The open-source Doceree iOS SDK implements the IAB MRAID bridge
+    (MRAIDConstants.swift declares MRAIDVersion = "2.0", with MRAID handler,
+    delegate, utilities and browser window classes).
+  source: https://github.com/doceree/ios-sdk/blob/master/DocereeAdsSdk/MRAIDConstants.swift
+- id: iab-tech-lab
+  conforms: true
+  evidence: IAB Tech Lab badge published in the compliance row on doceree.com.
+  source: https://doceree.com/
+- id: tag-trustworthy-accountability-group
+  conforms: true
+  evidence: TAG badge published in the compliance row on doceree.com, linking to
+    tagtoday.net.
+  source: https://doceree.com/
+- id: soc2
+  conforms: true
+  evidence: >-
+    "SOC 2 controls and enterprise access management" listed under the Security
+    posture section of the Doceree Trust & Compliance page. No report type
+    (Type I/II), auditor, or report date is published, and no report request
+    flow is offered.
+  source: https://doceree.com/trust
+- id: hipaa
+  conforms: partial
+  evidence: >-
+    Doceree publishes a HIPAA badge and describes a "HIPAA-aware architecture;
+    you govern any PHI/PII inputs". This is a stated architectural posture, not
+    a claim of HIPAA certification or a Business Associate Agreement.
+  source: https://doceree.com/trust
+- id: gdpr
+  conforms: true
+  evidence: GDPR badge on doceree.com; region-specific Privacy Policy - Europe
+    and Advertiser Terms of Service - Europe published in the support center;
+    TCF consent enforced in the bid adapter.
+  source: https://doceree.com/privacy-policy
+- id: ccpa
+  conforms: true
+  evidence: CCPA badge on doceree.com linking to oag.ca.gov/privacy/ccpa;
+    US-specific privacy policy and program policy published.
+  source: https://doceree.com/privacy-policy
+- id: oauth2
+  conforms: false
+  evidence: No oauth2 security scheme, no /.well-known/oauth-authorization-server
+    (404 on every host), no documented OAuth flow.
+- id: openid-connect
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on every Doceree host.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: No error envelope of any kind is published or present in any Doceree
+    client; responses are flat JSON with no error member.
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on every Doceree host.
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: No deprecation or sunset policy is published; no Sunset/Deprecation
+    header support documented.
+- id: openapi
+  conforms: false
+  evidence: >-
+    Probed /openapi.json, /openapi.yaml, /swagger.json, /v1/openapi.json,
+    /api-docs on doceree.com, www.doceree.com, dev.doceree.com,
+    support.doceree.com, bidder.doceree.com, tracking.doceree.com,
+    servedbydoceree.doceree.com and admanager.doceree.com on 2026-08-04 —
+    all 404 or 403.
+- id: a2a-agent-card
+  conforms: false
+  evidence: >-
+    /.well-known/agent-card.json and /.well-known/agent.json probed on all nine
+    hosts — 404/403 everywhere except exchange.doceree.com, which returns an
+    HTML SPA shell for every path and is rejected as a catch-all.
+compliance_program:
+  published: true
+  url: https://doceree.com/trust
+  certifications: [SOC 2]
+  posture: [HIPAA-aware architecture, no model training on customer data,
+    audit logging, role-based permissions, scoped revocable integration
+    permissions, human-in-the-loop approval]

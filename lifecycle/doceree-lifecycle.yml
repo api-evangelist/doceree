@@ -1,0 +1,55 @@
+generated: '2026-08-04'
+method: searched
+source: >-
+  live probes of Doceree hosts,
+  https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js,
+  https://github.com/doceree/DocereePodSpecs,
+  https://trunk.cocoapods.org/api/v1/pods/DocereeAdSdk,
+  https://support.doceree.com/hc/en-us
+versioning:
+  scheme: uri-path
+  current: v1
+  docs: null
+  policy_published: false
+  evidence: All public ad-serving paths are prefixed /v1/; no version negotiation
+    header, no dated version train, no published versioning policy.
+sdk_versioning:
+  scheme: semver
+  ios_pod_current: 6.2.1
+  ios_spec_repo_current: 1.1.3
+  note: >-
+    The CocoaPods trunk pod `DocereeAdSdk` is at 6.2.1 (with 6.0.0-beta.1/2/3
+    published), while Doceree's own spec repository github.com/doceree/DocereePodSpecs
+    tops out at DocereeAdsSdk 1.1.3. Two parallel distribution channels with
+    divergent version lines; neither publishes release notes.
+  source: https://trunk.cocoapods.org/api/v1/pods/DocereeAdSdk
+deprecation:
+  policy_url: null
+  sunset_header: false
+  deprecation_header: false
+  evidence: No deprecation or sunset policy is published on any Doceree host, and
+    no RFC 8594 Sunset/Deprecation header support is documented.
+status_page:
+  url: null
+  evidence: status.doceree.com does not resolve (NXDOMAIN, 2026-08-04); no status
+    or uptime page is linked from doceree.com, the support center, or the
+    trust page.
+sla:
+  api_uptime_url: null
+  note: >-
+    Doceree publishes campaign-operations SLAs in its help center ("What are the
+    service level agreements (SLA) for setting up a campaign?",
+    support.doceree.com articles 8234398305559 and 8042309082391), but no API
+    availability or uptime SLA.
+changelog:
+  url: null
+  evidence: No dated product or API changelog was found on doceree.com,
+    support.doceree.com, blog.doceree.com or the GitHub organization. The
+    blog is editorial/marketing rather than release notes, so no changelog/
+    artifact is emitted.
+deprecated_operations: []
+gaps:
+- No published API versioning or deprecation policy.
+- No status page and no uptime SLA for the ad-serving endpoints.
+- No changelog or release notes for either the API or the SDKs.
+- SDK version lines diverge between CocoaPods trunk and Doceree's own spec repo.

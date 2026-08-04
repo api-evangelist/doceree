@@ -1,0 +1,42 @@
+generated: '2026-08-04'
+method: searched
+probe: true
+source: https://doceree.com/trust
+url: https://doceree.com/trust
+title: Trust & compliance — Doceree
+note: >-
+  Found by direct search, not by the mechanical probe (probe-security-programs.py
+  reported trust=none on 2026-08-04; trust.doceree.com, security.doceree.com and
+  status.doceree.com do not resolve). The page is a real, publicly reachable
+  trust/compliance page scoped to Doceree's "Daily Command" AI product.
+certifications:
+- SOC 2
+posture:
+- HIPAA-aware architecture (customer governs PHI/PII inputs)
+- No training of models on customer campaign, client or product data
+- Full audit logging across recommendations and approvals
+- Role-based permissions and admin visibility
+- Scoped, revocable integration permissions
+- Human-in-the-loop approval before anything reaches market
+- HCP and patient guardrails kept distinct
+- Data retention and deletion controls
+gaps:
+- No SOC 2 report type (Type I / Type II), auditor, or report date published.
+- No report-request or NDA flow; no downloadable evidence.
+- No ISO 27001, PCI DSS, HITRUST or FedRAMP claim.
+- No sub-processor list or uptime/status page (status.doceree.com does not
+  resolve).
+- No vulnerability disclosure policy or security contact published; the
+  trust page carries no security@ address and /.well-known/security.txt is 404
+  on every host.
+evidence:
+- source: https://doceree.com/trust
+  http_status: 200
+  fetched: '2026-08-04'
+  keywords: [soc 2, hipaa, audit logging, trust & compliance, security posture,
+    role-based permissions, data retention]
+- source: https://doceree.com/
+  http_status: 200
+  fetched: '2026-08-04'
+  keywords: [hipaa badge, gdpr badge, ccpa badge, iab badge, iab tech lab badge,
+    tag badge, dun & bradstreet badge]

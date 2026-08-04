@@ -1,23 +1,140 @@
 aid: doceree
 name: Doceree
-description: 'Doceree is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'Doceree Inc. is a US healthcare marketing technology company (Short Hills,
+  New Jersey) operating a global network of physician-only platforms for programmatic
+  messaging and point-of-care advertising to healthcare professionals. Its platform
+  spans HCP programmatic, point-of-care, EHR, email, SMS, co-pay/affordability and
+  account-based messaging channels, backed by a proprietary HCP identity-resolution
+  graph. Doceree''s public, machine-readable surface is an advertising-technology
+  one rather than a general-purpose developer API: a versioned ad-request/bidder
+  endpoint (bidder.doceree.com/v1/adrequest), a tracking/beacon endpoint
+  (tracking.doceree.com), a hosted publisher tag (the Doceree Publisher Tag,
+  servedbydoceree.doceree.com/script/render-header.js), a first-party Prebid.js
+  header-bidding adapter (bidder code "doceree", IAB Europe GVL ID 1063), and
+  first-party mobile ad SDKs for iOS (CocoaPods) and Android (JitPack). Doceree
+  publishes no OpenAPI, AsyncAPI, GraphQL schema, MCP server or A2A agent card at
+  any probed host as of August 2026.'
 url: https://raw.githubusercontent.com/api-evangelist/doceree/refs/heads/main/apis.yml
+image: https://doceree.com/images/doceree-logo.svg
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-harvest-source-url: https://forgeglobal.com/doceree_stock/
 specificationVersion: '0.20'
 created: '2026-08-04'
 modified: '2026-08-04'
 tags:
+- Advertising
+- Healthcare
+- Marketing
+- AdTech
+- Programmatic
+- Header Bidding
+- Life Sciences
+- Pharmaceutical
+- Point of Care
+- Identity Resolution
+- Electronic Health Records
 - Company
-apis: []
+apis:
+- aid: doceree:bidder
+  name: Doceree Bidder / Ad Request API
+  description: 'The ad-request surface Doceree publisher partners call to fetch an
+    HCP-targeted advertisement. It is the endpoint behind the Doceree Publisher Tag,
+    the first-party Prebid.js header-bidding adapter (bidder code "doceree") and the
+    Doceree iOS/Android ad SDKs. GET /v1/adrequest returns a JSON ad payload
+    (sourceHTML, width, height, cpmBid, currency, advertiserDomain, DIVID, guid);
+    additional documented paths cover identity initialization (/v1/doceree-init,
+    /v1/init, /v1/initliveintent), point-of-care and DMD data capture
+    (/v1/savePOCdata, /v1/saveDMDInfo), ad-block feedback (/saveadblockinfo) and
+    client log shipping (/render/logMessage). No OpenAPI is published; the surface
+    below is recorded from Doceree''s own public client code.'
+  humanURL: https://doceree.com/publishers
+  baseURL: https://bidder.doceree.com
+  tags:
+  - Advertising
+  - Header Bidding
+  - Programmatic
+  - Healthcare
+  properties:
+  - type: APIReference
+    url: https://docs.prebid.org/dev-docs/bidders/doceree.html
+  - type: SourceCode
+    url: https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+  - type: Conventions
+    url: conventions/doceree-conventions.yml
+  - type: Authentication
+    url: authentication/doceree-authentication.yml
+- aid: doceree:tracking
+  name: Doceree Tracking API
+  description: 'Doceree''s measurement and beacon endpoint. The Prebid.js adapter
+    fires GET /v1/hbTimeout and GET /v1/hbBidWon with a base64-encoded, URI-encoded
+    JSON payload on the `data` query parameter and an `adp` adapter identifier;
+    impression and click beacons returned inside an ad response are also served from
+    this host. No OpenAPI is published; the surface is recorded from Doceree''s own
+    public Prebid.js adapter and iOS SDK source.'
+  humanURL: https://doceree.com/publishers
+  baseURL: https://tracking.doceree.com
+  tags:
+  - Advertising
+  - Analytics
+  - Tracking
+  properties:
+  - type: SourceCode
+    url: https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: DomainSecurity
+  url: security/doceree-domain-security.yml
 - type: Website
-  url: https://forgeglobal.com/doceree_stock/
+  url: https://doceree.com/
+- type: DeveloperPortal
+  url: https://doceree.com/publishers
+- type: Documentation
+  url: https://support.doceree.com/hc/en-us
+- type: APIReference
+  url: https://docs.prebid.org/dev-docs/bidders/doceree.html
+- type: Support
+  url: https://support.doceree.com/hc/en-us
+- type: Blog
+  url: https://blog.doceree.com/
+- type: GitHubOrganization
+  url: https://github.com/doceree
+- type: Login
+  url: https://exchange.doceree.com/login
+- type: TermsOfService
+  url: https://doceree.com/us-terms-of-service-advertiser
+- type: PrivacyPolicy
+  url: https://doceree.com/privacy-policy
+- type: TrustCenter
+  url: https://doceree.com/trust
+- type: Compliance
+  url: https://doceree.com/trust
+- type: Contact
+  url: https://doceree.com/contact
+- type: Packages
+  url: packages/doceree-packages.yml
+- type: SDKs
+  url: packages/doceree-packages.yml
+- type: Components
+  url: components/doceree-components.yml
+- type: Conventions
+  url: conventions/doceree-conventions.yml
+- type: Authentication
+  url: authentication/doceree-authentication.yml
+- type: Conformance
+  url: conformance/doceree-conformance.yml
+- type: Lifecycle
+  url: lifecycle/doceree-lifecycle.yml
+- type: WellKnown
+  url: well-known/doceree-well-known.yml
+- type: LLMsTxt
+  url: llms/doceree-llms.txt
+x-enrichment:
+  date: '2026-08-04'
+  status: enriched
+  artifacts_added: 10
+  pass: local-v1

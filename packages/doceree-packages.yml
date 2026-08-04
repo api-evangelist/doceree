@@ -1,0 +1,91 @@
+generated: '2026-08-04'
+method: searched
+source: https://github.com/doceree + CocoaPods trunk + npm registry + Prebid.js
+notes: >-
+  Doceree ships first-party client libraries for ad rendering rather than a
+  general-purpose API SDK. Registries probed 2026-08-04: CocoaPods (hit),
+  GitHub org github.com/doceree (hit), npm (one community/employee package,
+  not clearly first-party), PyPI (404 for "doceree"), Maven Central
+  (0 results for "doceree"), JitPack (com.github.doceree returns 404 to
+  anonymous API queries; the Android SDK is documented as a JitPack
+  dependency but its exact coordinates are only published inside the
+  sign-in-gated support article, so they are NOT recorded here).
+packages:
+- language: swift
+  registry: cocoapods
+  name: DocereeAdSdk
+  url: https://cocoapods.org/pods/DocereeAdSdk
+  install: pod 'DocereeAdSdk'
+  official: true
+  latest_version: 6.2.1
+  evidence:
+    fetched: '2026-08-04'
+    url: https://trunk.cocoapods.org/api/v1/pods/DocereeAdSdk
+    http_status: 200
+    owner_email: muqeem.ahmad@doceree.com
+- language: swift
+  registry: cocoapods-private-spec-repo
+  name: DocereeAdsSdk
+  url: https://github.com/doceree/DocereePodSpecs
+  install: |
+    source 'https://github.com/doceree/DocereePodSpecs.git'
+    pod 'DocereeAdsSdk'
+  official: true
+  latest_version: 1.1.3
+  description: Doceree iOS SDK for mobile ads, published through Doceree's own
+    CocoaPods spec repository. Used by publisher partners to render Doceree ads
+    and record impressions/actions.
+  source_code: https://github.com/doceree/ios-sdk
+  license: MIT
+  evidence:
+    fetched: '2026-08-04'
+    url: https://raw.githubusercontent.com/doceree/DocereePodSpecs/main/DocereeAdsSdk/1.1.3/DocereeAdsSdk.podspec
+    http_status: 200
+- language: swift
+  registry: github
+  name: doceree/ios-sdk-new
+  url: https://github.com/doceree/ios-sdk-new
+  official: true
+  description: Current Doceree iOS SDK sources, podspec and DocereeAdsSdk Xcode
+    framework (iOS 15.0+). Actively maintained (last push 2026-07-24).
+  evidence:
+    fetched: '2026-08-04'
+    url: https://api.github.com/repos/doceree/ios-sdk-new
+    http_status: 200
+- language: javascript
+  registry: prebid.js
+  name: docereeBidAdapter
+  url: https://docs.prebid.org/dev-docs/bidders/doceree.html
+  install: Build Prebid.js with the `doceree` module (bidder code `doceree`)
+  official: true
+  description: First-party Prebid.js header-bidding adapter for Doceree. Bidder
+    code `doceree`, IAB Europe Global Vendor List ID 1063, banner media type,
+    TCF-EU supported.
+  source_code: https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+  evidence:
+    fetched: '2026-08-04'
+    url: https://raw.githubusercontent.com/prebid/Prebid.js/master/modules/docereeBidAdapter.js
+    http_status: 200
+- language: kotlin
+  registry: jitpack
+  name: Doceree Ads SDK (Android)
+  url: https://support.doceree.com/hc/en-us/articles/360052155494-Platform-Integration
+  official: true
+  status: documented-coordinates-not-public
+  description: Doceree documents an Android Ads SDK distributed via JitPack
+    (add the JitPack repository, then the Doceree dependency, then call
+    DocereeAdsSdk initialize()). The exact group/artifact coordinates live in
+    the sign-in-gated support article and could not be resolved anonymously
+    (https://jitpack.io/api/builds/com.github.doceree -> 404), so they are not
+    recorded rather than guessed.
+- language: javascript
+  registry: npm
+  name: react-native-doceree-ads
+  url: https://www.npmjs.com/package/react-native-doceree-ads
+  install: npm install react-native-doceree-ads
+  official: false
+  latest_version: 0.0.4
+  note: Published by npm user `muqeemahmad` (the same maintainer handle that
+    owns the first-party CocoaPods pod), but the package describes itself as
+    "Test Lib", declares no repository or homepage, and is not referenced from
+    Doceree documentation. Recorded as unofficial pending provider confirmation.

@@ -1,0 +1,83 @@
+generated: '2026-08-04'
+method: searched
+source: >-
+  https://servedbydoceree.doceree.com/script/render-header.js,
+  https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js,
+  https://github.com/doceree/ios-sdk (DocereeAdsSdk/Repo/AdWebRepo.swift),
+  https://docs.prebid.org/dev-docs/bidders/doceree.html
+docs: https://docs.prebid.org/dev-docs/bidders/doceree.html
+note: >-
+  Doceree publishes no OpenAPI, so there are no machine-readable
+  securitySchemes to derive from. This profile is read from Doceree's own
+  public client code (the hosted publisher tag, the first-party Prebid.js
+  adapter, and the open-source iOS SDK). Authentication is publisher-identity
+  based and travels in the query string; there is no OAuth 2.0, OpenID Connect,
+  HTTP Basic/Bearer or mTLS surface on the public ad-serving endpoints.
+summary:
+  types: [apiKey]
+  api_key_in: [query]
+  oauth2_flows: []
+  bearer: false
+  mtls: false
+schemes:
+- name: placementId
+  type: apiKey
+  in: query
+  parameter: id
+  required: true
+  description: >-
+    The Doceree placement identifier that identifies the publisher ad slot
+    making the request. Example form published in the Prebid.js bidder docs:
+    DOC_7jm9j5eqkl0xvc5w. Required on GET /v1/adrequest; the Prebid.js adapter
+    rejects a bid request without it (isBidRequestValid).
+  sources:
+  - https://docs.prebid.org/dev-docs/bidders/doceree.html
+  - https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+- name: publisherToken
+  type: apiKey
+  in: query
+  parameter: token
+  required: false
+  description: >-
+    Publisher token read from the Prebid.js `doceree.context` config
+    (config.getConfig('doceree.context').token) and appended to the ad request.
+    Identifies the publisher context alongside publisherDomain.
+  sources:
+  - https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+- name: appKey
+  type: apiKey
+  in: query
+  parameter: appKey
+  required: true
+  description: >-
+    Mobile application key sent by the Doceree iOS/Android ad SDKs on
+    GET /v1/adrequest, alongside id, size and platformType. Issued when a
+    publisher creates a Doceree account.
+  sources:
+  - https://github.com/doceree/ios-sdk/blob/master/DocereeAdsSdk/Repo/AdWebRepo.swift
+identity_context:
+  description: >-
+    Beyond credentialing, Doceree's ad request carries an HCP identity payload.
+    The Prebid.js adapter base64-encodes a URI-encoded JSON object from
+    config.getConfig('doceree.user').data onto the `loggedInUser` query
+    parameter; the hosted publisher tag builds the same value from a
+    site-provided `hcpContext` object and a first-party Doceree cookie. This is
+    the input to Doceree's HCP identity-resolution layer, not an auth
+    credential.
+  parameters: [loggedInUser, publisherDomain, currentUrl, pubRequestedURL]
+consent:
+  framework: IAB Europe Transparency & Consent Framework (TCF)
+  gvl_id: 1063
+  parameters:
+    gdpr: Flag indicating whether GDPR applies (string, e.g. "1")
+    gdpr_consent: URL-safe base64-encoded TCF consent string
+  note: >-
+    The Prebid.js adapter enforces that a consent string is present when
+    gdpr == 1 (isGdprConsentPresent). USP/CCPA and COPPA support are listed as
+    "check with bidder" in the Prebid bidder documentation.
+gaps:
+- No published authentication reference page on a Doceree-owned host; the
+  authoritative public reference is the Prebid bidder documentation.
+- Credentials travel as query parameters rather than headers, so they appear in
+  intermediary logs and referrer chains.
+- No documented key rotation, expiry, or scope model.

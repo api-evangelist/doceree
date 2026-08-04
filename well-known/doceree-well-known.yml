@@ -1,0 +1,85 @@
+generated: '2026-08-04'
+method: probed
+source: live HTTPS probes of every Doceree host in apis.yml
+summary:
+  hosts_probed: 9
+  documents_found: 0
+  note: >-
+    No /.well-known/ discovery document is served from any Doceree host.
+    exchange.doceree.com answers HTTP 200 for every /.well-known/* and /llms.txt
+    path, but the body is the Angular single-page-app shell
+    (content-type: text/html, body begins "<!doctype html>"), so those 200s are
+    a catch-all false positive and are recorded as such, not as hits.
+hosts:
+- host: doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: www.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/ai-plugin.json, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: bidder.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: tracking.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/openid-configuration, status: 404}
+  - {path: /.well-known/oauth-authorization-server, status: 404}
+  - {path: /.well-known/api-catalog, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: servedbydoceree.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 403}
+  - {path: /.well-known/agent-card.json, status: 403}
+  - {path: /.well-known/agent.json, status: 403}
+  - {path: /llms.txt, status: 403}
+  note: CDN returns 403 for all unmatched paths on this host; /script/render-header.js
+    is served 200.
+- host: admanager.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: exchange.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 200, rejected: spa-catch-all}
+  - {path: /.well-known/agent-card.json, status: 200, rejected: spa-catch-all}
+  - {path: /.well-known/agent.json, status: 200, rejected: spa-catch-all}
+  - {path: /llms.txt, status: 200, rejected: spa-catch-all}
+  note: All four responses are text/html Angular app shells, not the requested
+    documents. Not counted as discovery hits.
+- host: support.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}
+- host: blog.doceree.com
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /.well-known/agent.json, status: 404}
+  - {path: /llms.txt, status: 404}

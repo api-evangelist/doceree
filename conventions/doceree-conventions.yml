@@ -1,0 +1,110 @@
+generated: '2026-08-04'
+method: searched
+source: >-
+  https://servedbydoceree.doceree.com/script/render-header.js,
+  https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js,
+  https://github.com/doceree/ios-sdk,
+  https://docs.prebid.org/dev-docs/bidders/doceree.html
+note: >-
+  Cross-cutting request/response semantics for Doceree's public ad-serving
+  surface, read from Doceree's own published client code. No OpenAPI exists to
+  derive from, and Doceree publishes no API style guide, so every convention
+  below is observed rather than declared by the provider.
+authentication:
+  style: query-parameter identifiers (placementId / token / appKey)
+  artifact: authentication/doceree-authentication.yml
+  headers: none required beyond User-Agent
+idempotency:
+  supported: false
+  note: >-
+    No idempotency key, request-deduplication header, or replay contract is
+    documented or present in any Doceree client. Ad requests are inherently
+    non-idempotent auction calls; the write-shaped endpoints
+    (/v1/savePOCdata, /v1/saveDMDInfo, /saveadblockinfo) accept no idempotency
+    parameter.
+pagination:
+  supported: false
+  note: The public surface returns a single ad payload per request; there is no
+    collection endpoint and therefore no pagination contract.
+versioning:
+  scheme: uri-path
+  current: v1
+  evidence: >-
+    Every public path on both hosts is prefixed /v1/ (/v1/adrequest,
+    /v1/doceree-init, /v1/init, /v1/initliveintent, /v1/saveDMDInfo,
+    /v1/savePOCdata, /v1/hbTimeout, /v1/hbBidWon). Two paths sit outside the
+    version prefix: /render/logMessage and /saveadblockinfo.
+  version_header: none observed
+request:
+  transport: HTTPS
+  methods_used: [GET, POST]
+  content_type_sent: application/json (POST bodies; iOS SDK sets it on every call)
+  parameter_style: >-
+    Flat query string built by string concatenation in every client. Values are
+    individually encoded; complex objects are JSON-serialized, URI-encoded, then
+    base64-encoded (window.btoa) onto a single parameter.
+  encoded_payload_parameters:
+  - {parameter: loggedInUser, endpoint: /v1/adrequest, encoding: base64(uriEncode(json))}
+  - {parameter: data, endpoint: /v1/hbTimeout, encoding: base64(uriEncode(json))}
+  - {parameter: data, endpoint: /v1/hbBidWon, encoding: base64(uriEncode(json))}
+response:
+  content_type: application/json
+  envelope: >-
+    Flat JSON object with no wrapper, no status field and no error member. The
+    Prebid.js adapter reads the response body directly.
+  fields:
+  - {name: DIVID, meaning: placement/creative identifier, mapped_to: creativeId}
+  - {name: sourceHTML, meaning: rendered ad markup, mapped_to: ad}
+  - {name: width, meaning: creative width in px}
+  - {name: height, meaning: creative height in px}
+  - {name: guid, meaning: request correlation id, mapped_to: requestId}
+  - {name: cpmBid, meaning: bid price, mapped_to: cpm}
+  - {name: currency, meaning: ISO currency of cpmBid}
+  - {name: advertiserDomain, meaning: advertiser domain, mapped_to: meta.advertiserDomains}
+  bid_ttl_seconds: 30
+  net_revenue: true
+  media_types: [banner]
+request_tracing:
+  correlation_id: >-
+    Client-generated `requestId` is sent on /v1/adrequest and echoed back as
+    `guid` in the response. There is no server-issued request-id response
+    header documented.
+  client_logging:
+    endpoint: POST https://bidder.doceree.com/render/logMessage
+    note: The hosted publisher tag ships client-side diagnostic messages here.
+error_handling:
+  envelope: none
+  note: >-
+    No error schema, error code registry, or RFC 9457 problem+json usage is
+    published or present in any client. The Prebid.js adapter treats a missing
+    or unparseable body as no bid; the iOS SDK models failures locally in
+    DocereeRequestError rather than from a server contract. No
+    errors/ artifact is emitted because there is nothing real to catalog.
+rate_limiting:
+  documented: false
+  headers: none observed
+consent_and_privacy:
+  framework: IAB Europe TCF (GVL ID 1063)
+  parameters: [gdpr, gdpr_consent]
+  identity_input: loggedInUser (HCP context payload)
+  ad_feedback:
+    endpoint: POST /saveadblockinfo
+    codes: [overlappingAd, inappropriateAd, notInterestedInCampaign,
+      notInterestedInBrand, notInterestedInBrandType, notInterestedInClientType]
+    source: https://github.com/doceree/ios-sdk/blob/master/DocereeAdsSdk/Utillities/Constants.swift
+environments:
+  production:
+    bidder: https://bidder.doceree.com
+    tracking: https://tracking.doceree.com
+    publisher_tag: https://servedbydoceree.doceree.com/script/render-header.js
+  non_production:
+    note: >-
+      dev-bidder.doceree.com and dev-tracking.doceree.com appear in
+      commented-out code in the open-source iOS SDK. Neither resolves in public
+      DNS as of 2026-08-04, so no sandbox/ artifact is emitted — Doceree
+      publishes no public test environment or test credentials.
+cross_links:
+  authentication: authentication/doceree-authentication.yml
+  lifecycle: lifecycle/doceree-lifecycle.yml
+  conformance: conformance/doceree-conformance.yml
+  components: components/doceree-components.yml
