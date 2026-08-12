@@ -1,15 +1,26 @@
-generated: '2026-08-04'
+generated: '2026-08-12'
 method: searched
 source: >-
   https://servedbydoceree.doceree.com/script/render-header.js,
   https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js,
   https://github.com/doceree/ios-sdk,
-  https://docs.prebid.org/dev-docs/bidders/doceree.html
+  https://github.com/doceree/ios-sdk-new (HTTPSupport.swift, Constants.swift,
+  DocereeAdRequest.swift, iOS_SDK_Implementation.md),
+  https://docs.prebid.org/dev-docs/bidders/doceree.html,
+  live probes of bidder.doceree.com / tracking.doceree.com / dai.doceree.com
 note: >-
   Cross-cutting request/response semantics for Doceree's public ad-serving
   surface, read from Doceree's own published client code. No OpenAPI exists to
   derive from, and Doceree publishes no API style guide, so every convention
   below is observed rather than declared by the provider.
+  2026-08-12 UPDATE: Doceree runs TWO generations of ad-serving API side by
+  side, and they share no conventions. The web/Prebid generation
+  (bidder.doceree.com, /v1/* paths, GET, flat query string) is documented below
+  as before. The current mobile generation, shipped in iOS SDK 6.x, uses a
+  different host (dai.doceree.com), a different path scheme (/drs/*, /dop/*
+  with no version segment), POST with a JSON body, and a different error
+  envelope. Both are live. Doceree publishes no statement that one supersedes
+  the other.
 authentication:
   style: query-parameter identifiers (placementId / token / appKey)
   artifact: authentication/doceree-authentication.yml
@@ -27,14 +38,62 @@ pagination:
   note: The public surface returns a single ad payload per request; there is no
     collection endpoint and therefore no pagination contract.
 versioning:
-  scheme: uri-path
+  scheme: uri-path (web generation) / none (mobile generation)
   current: v1
   evidence: >-
-    Every public path on both hosts is prefixed /v1/ (/v1/adrequest,
-    /v1/doceree-init, /v1/init, /v1/initliveintent, /v1/saveDMDInfo,
-    /v1/savePOCdata, /v1/hbTimeout, /v1/hbBidWon). Two paths sit outside the
-    version prefix: /render/logMessage and /saveadblockinfo.
+    Every public path on bidder.doceree.com and tracking.doceree.com is prefixed
+    /v1/ (/v1/adrequest, /v1/doceree-init, /v1/init, /v1/initliveintent,
+    /v1/saveDMDInfo, /v1/savePOCdata, /v1/hbTimeout, /v1/hbBidWon). Two paths sit
+    outside the version prefix: /render/logMessage and /saveadblockinfo. The
+    newer mobile surface on dai.doceree.com has NO version segment at all
+    (/drs/quest, /drs/nEvent, /drs/saveAdBlockInfo, /dop/settings,
+    /dop/getHcpSelfValidation, /dop/updateHcpSelfValidation); the only version
+    negotiation anywhere is a `version=1` query parameter on /dop/settings.
   version_header: none observed
+surfaces:
+- id: web-prebid
+  hosts: [bidder.doceree.com, tracking.doceree.com, servedbydoceree.doceree.com]
+  transport: GET, flat query string
+  paths: [/v1/adrequest, /v1/doceree-init, /v1/init, /v1/initliveintent,
+    /v1/savePOCdata, /v1/saveDMDInfo, /v1/hbTimeout, /v1/hbBidWon,
+    /saveadblockinfo, /render/logMessage]
+  clients: [Doceree Publisher Tag, Prebid.js docereeBidAdapter]
+  error_envelope: adserving-inline (errMessage/debugMessage inside HTTP 200)
+- id: mobile-dai
+  hosts: [dai.doceree.com]
+  transport: POST, application/json body
+  paths:
+  - {path: /drs/quest, purpose: ad request}
+  - {path: /drs/saveAdBlockInfo, purpose: ad-block feedback}
+  - {path: /drs/nEvent, purpose: 'patient/clinical session event; query params uid,
+      sid, hid, status, eType'}
+  - {path: '/dop/settings?version=1', purpose: remote SDK app configuration}
+  - {path: /dop/getHcpSelfValidation, purpose: HCP self-validation read}
+  - {path: /dop/updateHcpSelfValidation, purpose: HCP self-validation write}
+  clients: [Doceree iOS SDK 6.x (DocereeAdSdk)]
+  error_envelope: platform-json (Spring-style timestamp/status/error/path)
+  discovered: '2026-08-12'
+  source: https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/HTTPSupport.swift
+  note: >-
+    GET on any of these paths returns HTTP 405 with a JSON error body; they are
+    POST-only.
+request_headers:
+  note: >-
+    The mobile generation is the only Doceree surface that sends meaningful
+    request headers. All are custom; none are standard.
+  headers:
+  - {name: User-Agent, purpose: SDK-composed UA string}
+  - {name: doceree-device-id, purpose: platform advertising identifier}
+  - {name: is_doceree_iOS_sdk_vendor_id, purpose: 'flag: identifier is the vendor
+      id rather than the IDFA'}
+  - {name: is-ad-tracking-enabled, purpose: ATT/tracking authorization state}
+  - {name: app-name, purpose: host application display name}
+  - {name: app-version, purpose: host application version}
+  - {name: app-bundle, purpose: host application bundle identifier}
+  - {name: lib-version, purpose: Doceree SDK version}
+  - {name: origin, purpose: request origin}
+  - {name: refer, purpose: referrer (note the non-standard spelling — not Referer)}
+  source: https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/Constants.swift
 request:
   transport: HTTPS
   methods_used: [GET, POST]
@@ -73,16 +132,25 @@ request_tracing:
     endpoint: POST https://bidder.doceree.com/render/logMessage
     note: The hosted publisher tag ships client-side diagnostic messages here.
 error_handling:
-  envelope: none
+  envelope: two, incompatible
+  artifact: errors/doceree-problem-types.yml
   note: >-
-    No error schema, error code registry, or RFC 9457 problem+json usage is
-    published or present in any client. The Prebid.js adapter treats a missing
-    or unparseable body as no bid; the iOS SDK models failures locally in
-    DocereeRequestError rather than from a server contract. No
-    errors/ artifact is emitted because there is nothing real to catalog.
+    CORRECTS the 2026-08-04 entry, which recorded "envelope: none". Live probing
+    on 2026-08-12 shows Doceree does signal errors: the ad-serving path returns
+    HTTP 200 with the ad object emptied and the failure carried inline on
+    errMessage/debugMessage (observed codes:
+    ErrorInvalidSlotIdOrInactivePlatform, ErrorIpRepeativeCallRejects), while
+    dai.doceree.com returns a Spring-style JSON body on 405/500. Neither is
+    RFC 9457. A client that checks only the HTTP status will read every
+    ad-serving failure as a success.
 rate_limiting:
   documented: false
   headers: none observed
+  artifact: rate-limits/doceree-rate-limits.yml
+  enforced_but_unsignalled: >-
+    An IP-based repetitive-call reject exists and was triggered during probing,
+    but it is returned as HTTP 200 with errMessage "Ip repetitive call" — no 429,
+    no Retry-After, no documented threshold.
 consent_and_privacy:
   framework: IAB Europe TCF (GVL ID 1063)
   parameters: [gdpr, gdpr_consent]
@@ -93,18 +161,31 @@ consent_and_privacy:
       notInterestedInBrand, notInterestedInBrandType, notInterestedInClientType]
     source: https://github.com/doceree/ios-sdk/blob/master/DocereeAdsSdk/Utillities/Constants.swift
 environments:
+  artifact: sandbox/doceree-sandbox.yml
   production:
     bidder: https://bidder.doceree.com
     tracking: https://tracking.doceree.com
     publisher_tag: https://servedbydoceree.doceree.com/script/render-header.js
+    mobile_ad_identity: https://dai.doceree.com
+    client_diagnostics: https://programmatic.doceree.com
   non_production:
     note: >-
-      dev-bidder.doceree.com and dev-tracking.doceree.com appear in
-      commented-out code in the open-source iOS SDK. Neither resolves in public
-      DNS as of 2026-08-04, so no sandbox/ artifact is emitted — Doceree
-      publishes no public test environment or test credentials.
+      UPDATED 2026-08-12. The iOS SDK exposes a public environment selector
+      (DocereeMobileAds.shared().setEnvironment(type:), EnvironmentType
+      .Dev/.Qa/.Prod/.Local) with hardcoded non-production hosts:
+      dev-bidder.doceree.com and dev-tracking.doceree.com (neither resolves),
+      qa-ad-test.doceree.com (404), qa-identity.doceree.com (200) and
+      qa-healthcare.doceree.com (404). Doceree still publishes no test
+      credentials, no test-mode key prefix and no invitation to use these hosts,
+      so there is no usable public sandbox — see sandbox/doceree-sandbox.yml.
 cross_links:
   authentication: authentication/doceree-authentication.yml
   lifecycle: lifecycle/doceree-lifecycle.yml
   conformance: conformance/doceree-conformance.yml
   components: components/doceree-components.yml
+  errors: errors/doceree-problem-types.yml
+  rate_limits: rate-limits/doceree-rate-limits.yml
+  data_model: data-model/doceree-data-model.yml
+  plans: plans/doceree-plans-pricing.yml
+  changelog: changelog/doceree-changelog.yml
+  sandbox: sandbox/doceree-sandbox.yml

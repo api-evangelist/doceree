@@ -1,0 +1,219 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://github.com/doceree/ios-sdk-new/blob/master/iOS_SDK_Implementation.md
+  (Doceree's own published integration guide),
+  https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/Constants.swift,
+  .../DocereeAdsSdk/api/PatientSession/PatientDetailsPTDMapper.swift,
+  .../DocereeAdsSdk/api/PatientSession/SessionAttributesBRMapper.swift,
+  .../DocereeAdsSdk/api/PatientSession/ActionAttributesATDMapper.swift,
+  .../DocereeAdsSdk/Model/AdResponse.swift
+note: >-
+  Doceree publishes no OpenAPI and no object reference, so there is no spec to
+  derive $ref links from. This entity graph is read from Doceree's own
+  MIT-licensed, first-party iOS SDK — specifically its public integration guide
+  (iOS_SDK_Implementation.md) and the payload mappers that translate those
+  objects onto the wire. Every field name below appears in Doceree's published
+  code or documentation; none is inferred.
+  The graph is unusual and worth stating plainly: the ad request is the carrier.
+  Doceree does not expose a data API — clinical, patient, insurance and
+  prescription attributes are attached to the ad request itself and compressed
+  into three short wire parameters (ptd, atd, br) before being sent to the ad
+  server.
+surfaces:
+  openapi: null
+  graphql: null
+  ad_request:
+    host: https://dai.doceree.com
+    path: /drs/quest
+    method: POST
+    note: current mobile ad-serving path in SDK 6.x
+  session_event:
+    host: https://dai.doceree.com
+    path: /drs/nEvent
+    method: POST
+  healthcare_intake:
+    host: https://qa-healthcare.doceree.com
+    path: /v1/intake
+    note: >-
+      Only a QA host is hardcoded in the shipped SDK
+      (HealthcareIntakeEndpoint.swift); no production healthcare-intake host is
+      published. healthcare.doceree.com returns 404.
+wire_compression:
+  note: >-
+    Doceree serialises each entity family into an abbreviated key space before
+    putting it on the ad request. The long names are the public SDK API; the
+    short names are what actually travels.
+  parameters:
+  - {parameter: ptd, carries: PatientData, mapper: PatientDetailsPTDMapper}
+  - {parameter: atd, carries: 'ActionEvent[]', mapper: ActionAttributesATDMapper,
+    envelope_key: evts}
+  - {parameter: br, carries: SessionAttributes (clinical/vitals/orders/prescriptions),
+    mapper: SessionAttributesBRMapper, envelope_key: attributes}
+  - {parameter: cns, carries: DocereeConsent}
+  - {parameter: adunit, carries: ad slot identifier}
+entities:
+- name: HCP
+  builder: HcpBuilder
+  description: The healthcare professional the ad is targeted at. The primary
+    identity subject of Doceree's identity-resolution graph.
+  identifiers: [hcpId (hcpid), hashedHcpId (hashedhcpid)]
+  fields: [firstName, lastName, specialization, organisation, email, hashedEmail,
+    mobile, hashedMobile, dateOfBirth, gender, city, state, country, zipCode,
+    userType, role]
+  entry_point: 'DocereeMobileAds.login(with: hcp)'
+- name: HealthAssociate
+  builder: HealthAssociateBuilder
+  description: A non-HCP clinical staff subject (e.g. nurse practitioner) with
+    its own identity and role attributes.
+  identifiers: [associateId (associateid), hashedAssociateId (hashedassociateid)]
+  fields: [associateRole, department, firstName, lastName, clinicalInfluenceTier]
+- name: User
+  builder: UserBuilder
+  description: Generic (non-HCP, non-associate) logged-in user identity.
+  identifiers: [userId (userid)]
+- name: PatientData
+  wire_parameter: ptd
+  description: >-
+    Patient attributes attached to the ad request. Doceree's Trust page states a
+    "HIPAA-aware architecture; you govern any PHI/PII inputs" — this entity is
+    where that governance obligation lands, because the SDK accepts direct
+    patient identifiers and clinical attributes.
+  identifiers: [patientId (pid), hashedId (hpid), hashedSsn (hssn)]
+  fields: [name (pname), dob (pdob), age (ag), gender (gd), email (eml),
+    hashedEmail (heml), mobile (mob), hashedMobile (hmob), zipCode (zip),
+    country (cntry)]
+- name: Insurance
+  wire_key: ins
+  parent: PatientData
+  fields: [hasInsurance, insuranceType, insuranceName, insurancePlanName,
+    insurancePlanId, insuranceGroupId, insuranceMemberId, policyholderName,
+    policyholderDob, relationshipToPolicyholder, primaryPayerPhone]
+- name: ClinicalProfile
+  wire_key: cp
+  parent: PatientData
+  fields: [smokingStatus, newAllergies]
+- name: Allergy
+  parent: ClinicalProfile
+  fields: [allergen, allergenType, reaction, severity, onsetDate, status]
+- name: DocereeConsent
+  builder: DocereeConsentBuilder
+  wire_parameter: cns
+  description: >-
+    Consent state, settable on the SDK and merged with previously stored
+    consent. Falls back to IAB TCF/GPP keys in UserDefaults when unset.
+  fields: [userConsent (upref), privacyType (pcytyp), privacyString (pcystr),
+    privacyVersion (pcyversion), privacySid (pcysid), consentSource (pcysrc),
+    gdprApplies (gdprapp), consentBasis (bas), mechanism, grantedAt, expiresAt,
+    consentReferenceId]
+  operations: [setConsent, clearConsent]
+- name: SessionAttributes
+  wire_parameter: br
+  envelope_key: attributes
+  description: >-
+    Clinical-visit context for the current session. Started with
+    startSession(), updated by add("sessionDetails", value:), ended with
+    closeSession().
+  fields: [sessionId (sid), sessionType, context, department, visitType,
+    duration, patientCount, session]
+- name: Vitals
+  parent: SessionAttributes
+  fields: [bloodPressureSystolic (bps), bloodPressureDiastolic (bpd),
+    heartRate (hr), temperature (tm), oxygenSaturation, respiratoryRate (rrate),
+    height (ht), weight (wt), vitalsRecordedAt (rat)]
+- name: Diagnosis
+  parent: SessionAttributes
+  wire_key: dxs
+  fields: [dxCode (dxc), dxType (dxt), status (sts), encounterDate (edt),
+    encounterType (etyp), diagnosedByHcpId (dhid), diagnosedByHashedHcpId (dhhid)]
+- name: LabOrder
+  parent: SessionAttributes
+  wire_key: tsts
+  fields: [testName (tnm), hcpcsCode (hcc), resultStatus (rsts), resultValue (rval),
+    resultUnit (runt), orderDate (odt), performedDate (pdt),
+    orderedByHcpId (ohid), orderedByHashedHcpId (ohhid)]
+- name: Prescription
+  parent: SessionAttributes
+  wire_key: rxs
+  fields: [rxCode (rxc), rxType (rxt), quantity (qty), daysSupply (ds),
+    refillsRemaining (rr), status (sts), prescribedDate (pdt),
+    prescribedByHcpId (phid), prescribedByHashedHcpId (phhid)]
+- name: PharmacyFill
+  parent: Prescription
+  wire_key: fls
+  fields: [dispensedDate (ddt), pharmacyName (phnm), ncpdpId (ncid),
+    pharmacyNpi (pnpi), quantity (qty), daysSupply (ds), fillNumber (fno)]
+- name: ActionEvent
+  wire_parameter: atd
+  envelope_key: evts
+  description: >-
+    A discrete clinical-workflow event. Only one event is retained per `type` —
+    re-adding the same type replaces the stored event.
+  types: [appt_request, appt_confirmed, appt_rescheduled, referral,
+    patient_checked_in, checkout]
+  common_fields: [type (typ), timestamp (ts), patientId (ptid), hcpId (npi),
+    hashedHcpId (hnpi), visitType (vtyp), visitUrgency (urg)]
+  type_specific:
+    appointment: [appointmentId (apid), appointmentDate (adate),
+      appointmentTime (atime), facilityName (facnm), facilityId (facid),
+      facilityAddress (facadd), facilityPhone (facph), reasonForVisit (rfv),
+      confirmationCode (cfcd), notificationChannel (nchn)]
+    reschedule: [previousDate (pdate), previousTime (ptime), newDate (ndate),
+      newTime (ntime), rescheduleReason (rrsn), initiatedBy (init)]
+    referral: [referralId (rid), specialization (spec), referralReason (rrsn),
+      referringHcpId (rnpi), referredToHcpId (fnpi), urgencyLevel (ulvl),
+      authorizationRequired (areq), authorizationNumber (anum), expiryDate (expdt)]
+    checkin: [checkedInAt (ciat), checkinMethod (cmth), waitTimeMinutes (wait),
+      roomAssigned (room), intakeComplete (intk)]
+    checkout: [checkoutTimestamp (cots), visitDurationMinutes (vdur),
+      billingStatus (bill), providerNotesStatus (pnote),
+      followUpInstructions (finst), referralIssued (refiss),
+      nextAppointmentScheduled (nxtapt), nextAppointmentDate (nadate),
+      nextAppointmentTime (natime)]
+- name: UniversalIds
+  description: Third-party identity tokens persisted for subsequent ad requests.
+  fields: [rampId (rampid), uid2, id5, liveIntentId (liveintentid)]
+  operation: setUniversalIds
+- name: AdResponse
+  description: >-
+    The ad-serving response object. Returned with HTTP 200 on both success and
+    failure — see errors/doceree-problem-types.yml.
+  fields: [status, CBID, DIVID, clickURL, newPlatformUid, platformUID, height,
+    width, version, maxAge, passbackTag, impressionLink, viewLink,
+    IntegrationType, creativeType, script, adRenderURL, adViewedURL, userId,
+    adUnit, imagePath, errMessage, debugMessage, minViewPercentage, minViewTime]
+  bidder_variant_fields: [sourceHTML, sourceURL, ctaLink, cpmBid, currency,
+    advertiserDomain, guid, crId, aId, bId, cId, pId, displayCtaType,
+    isDisplayAd, isDisplayFormEnable, isEnableDJS, isClickable]
+- name: PlatformData
+  description: Device/app/platform context sent alongside every request.
+  fields: [advertisingId (uid), bundleId (bnd), platformId (pl), dataSource (sr),
+    screenPath (pu), editorialTags (mt), localTimestamp (lt), installedApps (ia),
+    privateMode (pv), gps]
+  enumerations:
+    platformId: {1: web, 2: mweb, 3: android, 4: ios, 5: amp}
+    dataSource: {1: js, 2: sdk, 3: adservedata, 4: dmd, 5: purplelab, 6: liveintent}
+relationships:
+- {from: HCP, to: SessionAttributes, type: has_many, via: hcpId}
+- {from: SessionAttributes, to: Vitals, type: has_one, via: attributes}
+- {from: SessionAttributes, to: Diagnosis, type: has_many, via: dxs}
+- {from: SessionAttributes, to: LabOrder, type: has_many, via: tsts}
+- {from: SessionAttributes, to: Prescription, type: has_many, via: rxs}
+- {from: Prescription, to: PharmacyFill, type: has_many, via: fls}
+- {from: PatientData, to: Insurance, type: has_one, via: ins}
+- {from: PatientData, to: ClinicalProfile, type: has_one, via: cp}
+- {from: ClinicalProfile, to: Allergy, type: has_many, via: newAllergies}
+- {from: PatientData, to: DocereeConsent, type: has_one, via: cns}
+- {from: ActionEvent, to: HCP, type: belongs_to, via: hcpId (npi)}
+- {from: ActionEvent, to: PatientData, type: belongs_to, via: patientId (ptid)}
+- {from: HCP, to: UniversalIds, type: has_one, via: device storage}
+- {from: AdResponse, to: HCP, type: belongs_to, via: platformUID}
+gaps:
+- No published object reference, field types, required/optional markers, or
+  value enumerations for most fields — types below are the Swift literal types
+  used in Doceree's own examples.
+- No id-prefix convention is documented; the example identifiers in Doceree's
+  guide (HCP-10234, PT-88012, APT-778-XY) are caller-supplied, not Doceree-issued.
+- The abbreviated wire keys are not documented anywhere outside the SDK source,
+  so a non-iOS integrator cannot construct a payload from published docs alone.
+- Only a QA host is published for the healthcare-intake endpoint.

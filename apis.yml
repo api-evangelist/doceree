@@ -11,9 +11,13 @@ description: 'Doceree Inc. is a US healthcare marketing technology company (Shor
   (tracking.doceree.com), a hosted publisher tag (the Doceree Publisher Tag,
   servedbydoceree.doceree.com/script/render-header.js), a first-party Prebid.js
   header-bidding adapter (bidder code "doceree", IAB Europe GVL ID 1063), and
-  first-party mobile ad SDKs for iOS (CocoaPods) and Android (JitPack). Doceree
-  publishes no OpenAPI, AsyncAPI, GraphQL schema, MCP server or A2A agent card at
-  any probed host as of August 2026.'
+  first-party mobile ad SDKs for iOS (CocoaPods) and Android (JitPack). A second,
+  newer ad-serving generation runs concurrently on dai.doceree.com (POST /drs/*
+  and /dop/*, unversioned) and is used by the iOS SDK 6.x; it carries clinical
+  session, patient, prescription and action-event attributes onto the ad request
+  itself. Doceree publishes no OpenAPI, AsyncAPI, GraphQL schema, MCP server or
+  A2A agent card at any probed host as of August 2026, and no /.well-known/
+  document on any host.'
 url: https://raw.githubusercontent.com/api-evangelist/doceree/refs/heads/main/apis.yml
 image: https://doceree.com/images/doceree-logo.svg
 x-type: company
@@ -21,7 +25,7 @@ x-source: harvest:secondary-market
 x-harvest-source-url: https://forgeglobal.com/doceree_stock/
 specificationVersion: '0.20'
 created: '2026-08-04'
-modified: '2026-08-04'
+modified: '2026-08-12'
 tags:
 - Advertising
 - Healthcare
@@ -81,12 +85,47 @@ apis:
   properties:
   - type: SourceCode
     url: https://github.com/prebid/Prebid.js/blob/master/modules/docereeBidAdapter.js
+- aid: doceree:dai
+  name: Doceree DAI Mobile Ad + Identity API
+  description: 'The current mobile ad-serving, identity and clinical-session surface,
+    used by the Doceree iOS SDK 6.x. Discovered 2026-08-12 by reading Doceree''s own
+    MIT-licensed first-party SDK (HTTPSupport.swift), which maps every environment to
+    a host: production is dai.doceree.com. Paths are POST-only and carry no version
+    segment: /drs/quest (ad request), /drs/nEvent (clinical session event with uid,
+    sid, hid, status and eType query parameters), /drs/saveAdBlockInfo (ad feedback),
+    /dop/settings?version=1 (remote SDK configuration), /dop/getHcpSelfValidation and
+    /dop/updateHcpSelfValidation (HCP self-validation). A GET returns HTTP 405 with a
+    JSON error envelope. This surface runs concurrently with the older /v1/* bidder
+    generation and Doceree publishes no statement that either supersedes the other.
+    No OpenAPI is published; the surface is recorded from Doceree''s own public SDK
+    source and confirmed by live probes.'
+  humanURL: https://github.com/doceree/ios-sdk-new
+  baseURL: https://dai.doceree.com
+  tags:
+  - Advertising
+  - Healthcare
+  - Identity Resolution
+  - Electronic Health Records
+  - Mobile
+  properties:
+  - type: SourceCode
+    url: https://github.com/doceree/ios-sdk-new
+  - type: Documentation
+    url: https://github.com/doceree/ios-sdk-new/blob/master/iOS_SDK_Implementation.md
+  - type: DataModel
+    url: data-model/doceree-data-model.yml
+  - type: ErrorCatalog
+    url: errors/doceree-problem-types.yml
+  - type: Conventions
+    url: conventions/doceree-conventions.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: TrustCenter
+  url: security/doceree-trust-center.yml
 - type: IssueTracker
   url: https://github.com/prebid/Prebid.js/issues
 - type: Releases
@@ -118,8 +157,6 @@ common:
   url: https://doceree.com/us-terms-of-service-advertiser
 - type: PrivacyPolicy
   url: https://doceree.com/privacy-policy
-- type: TrustCenter
-  url: https://doceree.com/trust
 - type: Compliance
   url: https://doceree.com/trust
 - type: Contact
@@ -138,12 +175,30 @@ common:
   url: conformance/doceree-conformance.yml
 - type: Lifecycle
   url: lifecycle/doceree-lifecycle.yml
-- type: WellKnown
-  url: well-known/doceree-well-known.yml
 - type: LLMsTxt
   url: llms/doceree-llms.txt
+- type: ErrorCatalog
+  url: errors/doceree-problem-types.yml
+- type: RateLimits
+  url: rate-limits/doceree-rate-limits.yml
+- type: Plans
+  url: plans/doceree-plans-pricing.yml
+- type: DataModel
+  url: data-model/doceree-data-model.yml
+- type: ChangeLog
+  url: changelog/doceree-changelog.yml
+- type: Sandbox
+  url: sandbox/doceree-sandbox.yml
 x-enrichment:
-  date: '2026-08-04'
+  date: '2026-08-12'
   status: enriched
-  artifacts_added: 10
+  artifacts_added: 6
   pass: local-v1
+x-notes:
+  well-known: >-
+    well-known/doceree-well-known.yml is retained as a recorded probe, but the
+    `type: WellKnown` pointer was REMOVED on 2026-08-12. The probe records
+    documents_found: 0 — every /.well-known/ path 404s or 403s on every Doceree
+    host, and the 200s on exchange.doceree.com are an Angular SPA catch-all
+    serving HTML, not documents. A pointer would have asserted that Doceree
+    serves a well-known surface, which it does not.

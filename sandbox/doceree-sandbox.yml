@@ -1,0 +1,75 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/HTTPSupport.swift,
+  .../DocereeAdsSdk/Utilities/Constants.swift (EnvironmentType),
+  .../DocereeAdsSdk/api/PatientSession/PatientSessionApi.swift,
+  .../DocereeAdsSdk/api/HealthcareIntake/HealthcareIntakeEndpoint.swift,
+  plus live probes of every named host on 2026-08-12
+published_sandbox: false
+note: >-
+  Doceree publishes NO public sandbox, NO test credentials, NO test-mode key
+  prefix and NO fixture or trigger tooling. There is no sign-up-free way to
+  exercise any Doceree endpoint. What IS published — and the reason this file
+  exists rather than being skipped — is a public environment selector on the
+  first-party iOS SDK (`DocereeMobileAds.shared().setEnvironment(...)`,
+  EnvironmentType .Dev / .Qa / .Prod / .Local) whose non-production hosts are
+  hardcoded in Doceree's own MIT-licensed source. Those hosts are recorded below
+  with the status they actually returned. Most do not resolve or are not
+  reachable anonymously, so the selector is effectively internal-only: an
+  integrator can flip the switch but has nowhere to point it.
+test_credentials: []
+test_keys: []
+test_clocks: false
+fixtures: false
+environments:
+- id: Prod
+  role: production
+  ad_host: dai.doceree.com
+  tracking_host: dai.doceree.com
+  identity_host: dai.doceree.com
+  probe: {url: 'https://dai.doceree.com/dop/settings?version=1', http_status: 405,
+    fetched: '2026-08-12', note: live; POST-only, returns a JSON error envelope on GET}
+- id: Qa
+  role: quality-assurance
+  ad_host: qa-ad-test.doceree.com
+  tracking_host: qa-ad-test.doceree.com
+  identity_host: qa-identity.doceree.com
+  healthcare_intake: https://qa-healthcare.doceree.com/v1/intake
+  probes:
+  - {url: 'https://qa-ad-test.doceree.com/', http_status: 404, fetched: '2026-08-12'}
+  - {url: 'https://qa-identity.doceree.com/', http_status: 200, fetched: '2026-08-12'}
+  - {url: 'https://qa-healthcare.doceree.com/', http_status: 404, fetched: '2026-08-12'}
+  note: >-
+    Resolves and answers, but no credentials, no documentation and no invitation
+    to use it are published. Treat as Doceree-internal.
+- id: Dev
+  role: development
+  ad_host: dev-bidder.doceree.com
+  tracking_host: dev-tracking.doceree.com
+  identity_host: qa-identity.doceree.com
+  probe: {url: 'https://dev-bidder.doceree.com/', http_status: 000, fetched: '2026-08-12',
+    note: does not resolve / no connection}
+- id: Local
+  role: local
+  host: 10.0.3.2
+  note: Android-emulator loopback address; developer-machine only, not a Doceree service.
+notable:
+  healthcare_intake_has_no_production_host: >-
+    HealthcareIntakeEndpoint.swift hardcodes a single URL —
+    https://qa-healthcare.doceree.com/v1/intake — with no environment switch at
+    all. The shipped 6.x SDK therefore points its healthcare-intake call at a QA
+    host in every build. healthcare.doceree.com returns 404, so no production
+    equivalent is published.
+  default_environment: >-
+    DocereeMobileAds holds `private var environmentType = EnvironmentType.Prod`,
+    so an integrator who never calls `setEnvironment(type:)` gets production.
+    The free helper functions getHost(type:) and getPath(methodName:type:) carry
+    a `.Dev` parameter default, but every call site passes the SDK's stored
+    environment, so that default is not reachable in normal use.
+gaps:
+- No public sandbox, test account, test key prefix, or test-vs-live mode concept.
+- No sample/dummy placement id is published that returns a served ad; the example
+  id in the Prebid docs (DOC_7jm9j5eqkl0xvc5w) returns an error payload.
+- No mock server, Postman collection, fixture set, or event-trigger tooling.
+- The QA environment is reachable but undocumented and uncredentialed.

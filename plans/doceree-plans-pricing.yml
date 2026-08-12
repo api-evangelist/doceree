@@ -1,0 +1,121 @@
+generated: '2026-08-12'
+method: searched
+source: >-
+  https://support.doceree.com/hc/en-us/articles/9082052137239-How-much-service-fee-does-Doceree-charge,
+  https://support.doceree.com/hc/en-us/articles/9083813535127-What-are-the-bidding-strategies-for-Programmatic-Ad-pricing-models,
+  https://support.doceree.com/hc/en-us/articles/9082098474903-What-is-the-billing-process-for-brands-and-media-agencies,
+  https://support.doceree.com/hc/en-us/articles/9082096207767-Is-adding-credit-card-for-activating-account-necessary
+docs: https://support.doceree.com/hc/en-us/sections/9082095340055-Billing
+plan_count: 0
+note: >-
+  Doceree publishes NO named subscription tiers and no /pricing page
+  (https://doceree.com/pricing returns HTTP 404, and no pricing entry exists in
+  https://doceree.com/sitemap.xml). It is an advertising marketplace, not a
+  metered API product: buyers fund media spend and Doceree takes a percentage
+  service fee on top. What IS published — and recorded below — is the fee
+  structure, the bidding/pricing models, and the billing mechanics, read from
+  Doceree's own public Zendesk help center. There is no per-request, per-seat or
+  per-API-call price list of any kind, so plan_count is honestly 0.
+pricing_model: percentage-of-media-spend + auction bidding
+currency: USD
+plans: []
+service_fees:
+- name: Tech Access Fee
+  rate: 10%
+  basis: media spend
+  description: >-
+    Charged for the technological set up and for running and implementation of
+    programmatic activities.
+  source: https://support.doceree.com/hc/en-us/articles/9082052137239-How-much-service-fee-does-Doceree-charge
+- name: Managed Services Fee
+  rate: 10%
+  basis: media spend
+  description: >-
+    Charged to have Doceree AdOps experts and the Customer Success team manage
+    campaign set up and campaign optimization. Doceree requires that any pilot
+    project be run as a managed service.
+  source: https://support.doceree.com/hc/en-us/articles/9082052137239-How-much-service-fee-does-Doceree-charge
+bidding_models:
+- id: CPM
+  name: Cost per Mille (cost per thousand impressions)
+  charged_on: impressions served
+  use_case: campaigns optimizing for visibility
+- id: CPS
+  name: Cost per Session
+  charged_on: EHR workflow sessions selected at campaign creation
+  workflows: [patient intake, diagnosis test ordering, diagnosis test review,
+    medical review, e-prescription (eRx)]
+  use_case: point-of-care / EHR campaigns
+- id: programmatic
+  name: Programmatic bidding
+  charged_on: >-
+    Doceree's bidding algorithm optimizes the bid in real time against a
+    daily/weekly spend limit and a target CPM or CPS goal.
+  controls: [daily spend limit, weekly spend limit, adjustable at any time]
+  source: https://support.doceree.com/hc/en-us/articles/9083813535127-What-are-the-bidding-strategies-for-Programmatic-Ad-pricing-models
+billing:
+  cycle: monthly
+  interim_invoice_threshold:
+    amount: 500
+    currency: USD
+    note: >-
+      "Billing happens for every brand at the end of every month or an
+      additional bill is generated if the campaign spends exceed $500 before the
+      end of the month."
+  payment_methods:
+  - id: credit-card
+    detail: >-
+      All major international credit cards; deducted automatically at the end of
+      every month based on expenditure. Card details are stored and processed
+      via Authorize.net. One card can be associated with multiple brands.
+  - id: monthly-invoicing
+    detail: >-
+      Not enabled by default. Applied for from the monthly invoicing tab
+      ("+Apply new"); once enabled, Doceree raises an invoice at month end and
+      the buyer wires payment before the stated due date.
+  - id: credit-line
+    detail: >-
+      Offered to selected brands and media agencies at Doceree's discretion,
+      based on payment history and other factors.
+  prerequisite: >-
+    At least one payment method must be registered on the Doceree platform
+    before a campaign can start.
+  source: https://support.doceree.com/hc/en-us/articles/9082098474903-What-is-the-billing-process-for-brands-and-media-agencies
+delivery_controls:
+  frequency_capping:
+    supported: true
+    granularity: [per day, per week, per month]
+    description: >-
+      Limits the number of impressions an individual HCP receives from a
+      campaign over a given period. This is a media-delivery control, not an API
+      rate limit — see rate-limits/doceree-rate-limits.yml.
+    source: https://support.doceree.com/hc/en-us/articles/9520824760983-What-is-frequency-capping
+access_model:
+  self_service: partial
+  note: >-
+    Doceree describes the platform as available both managed and self-service
+    (support article "Is the platform managed or self-service?"), but account
+    creation, the Exchange dashboard (https://exchange.doceree.com/login) and
+    the publisher ad-serving credentials (placementId / appKey) are all issued
+    behind account signup. There is no public self-serve signup price, no free
+    tier, and no trial published.
+gaps:
+- No /pricing page and no plan tiers of any kind on doceree.com.
+- No published CPM/CPS floor prices, rate card, or minimum spend.
+- No API-call pricing — the ad-serving endpoints are not sold as an API product.
+- Cancellation policy exists as a help-center article but states no numbers.
+evidence:
+- url: https://doceree.com/pricing
+  http_status: 404
+  fetched: '2026-08-12'
+- url: https://support.doceree.com/api/v2/help_center/en-us/articles.json
+  http_status: 200
+  fetched: '2026-08-12'
+  note: >-
+    Doceree's Zendesk help-center REST API answers anonymously and returns 117
+    published articles, including the fee, bidding and billing articles read
+    above. The rendered HTML pages for several of those articles return HTTP 403
+    to anonymous browsers, so the API is the only readable path to them.
+- url: https://support.doceree.com/hc/en-us/articles/9082052137239-How-much-service-fee-does-Doceree-charge
+  http_status: 200
+  fetched: '2026-08-12'

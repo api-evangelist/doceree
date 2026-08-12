@@ -1,0 +1,147 @@
+generated: '2026-08-12'
+method: probed
+source: >-
+  live unauthenticated probes of https://bidder.doceree.com/v1/adrequest and
+  https://dai.doceree.com/* on 2026-08-12, plus Doceree's own first-party
+  open-source iOS SDK
+  (https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/DocereeRequestError.swift,
+  .../Model/AdResponse.swift)
+format: proprietary
+rfc9457: false
+note: >-
+  Doceree publishes no OpenAPI and no error reference page, so this catalog is
+  PROBED from live responses and read from the provider's own published client
+  code — not derived from a spec. It corrects an earlier reading in this repo
+  that said Doceree has "no error envelope of any kind": the ad-serving surface
+  does carry a structured error envelope, and the newer mobile ad host carries a
+  second, different one. There are two incompatible envelopes across two hosts,
+  and neither is RFC 9457 problem+json.
+envelopes:
+- id: adserving-inline
+  hosts: [bidder.doceree.com, dai.doceree.com (drs/dop ad paths)]
+  http_status_on_error: 200
+  content_type: application/json
+  shape: >-
+    The full ad-response object is always returned. Failure is signalled INSIDE
+    the 200 body via the errMessage and debugMessage members, with every ad
+    field ("sourceHTML", "DIVID", "cpmBid": 0, ...) left empty/zero.
+  members:
+  - {name: errMessage, type: string, meaning: error identifier}
+  - {name: debugMessage, type: string, meaning: human-readable detail}
+  - {name: guid, type: string, meaning: per-request correlation id, present even on error}
+  - {name: status, type: integer, meaning: present in the SDK AdResponse model; absent
+      from the observed anonymous bidder response}
+  agent_warning: >-
+    A client that checks only the HTTP status will read every failure as a
+    success. HTTP 200 is NOT evidence of a served ad — errMessage must be
+    inspected on every response.
+- id: platform-json
+  hosts: [dai.doceree.com]
+  http_status_on_error: [405, 500]
+  content_type: application/json
+  shape: >-
+    A conventional Spring-style JSON error body on the current mobile
+    ad/identity host. Two variants were observed and they do not agree with each
+    other: a 405 carries {timestamp (formatted string), code, status, message}
+    while a 500 carries {timestamp (epoch millis), status, error, path}.
+  members:
+  - {name: timestamp, type: string|integer, meaning: 'inconsistent — "2026-08-12
+      16:52:03.561" on 405, 1786553523698 (epoch ms) on 500'}
+  - {name: code, type: integer, meaning: HTTP status, 405 variant only}
+  - {name: status, type: string|integer, meaning: 'inconsistent — "METHOD_NOT_ALLOWED"
+      on 405, 500 (integer) on 500'}
+  - {name: message, type: string, meaning: detail, 405 variant only}
+  - {name: error, type: string, meaning: reason phrase, 500 variant only}
+  - {name: path, type: string, meaning: request path, 500 variant only}
+problem_types:
+- id: ErrorInvalidSlotIdOrInactivePlatform
+  envelope: adserving-inline
+  http_status: 200
+  err_message: ErrorInvalidSlotIdOrInactivePlatform
+  debug_message: Invalid slotId Or platform not active.
+  title: Invalid placement id, or the publisher platform is not active
+  remediation: >-
+    Check the `id` query parameter is a live Doceree placement id (form
+    DOC_xxxxxxxxxxxxxxxx) and that the publisher account/platform is active in
+    the Doceree Exchange. Returned for a missing, empty or unrecognised id.
+  observed:
+    url: https://bidder.doceree.com/v1/adrequest
+    fetched: '2026-08-12'
+- id: ErrorIpRepeativeCallRejects
+  envelope: adserving-inline
+  http_status: 200
+  err_message: Ip repetitive call
+  debug_message: ErrorIpRepeativeCallRejects
+  title: Repeated ad requests from the same IP were rejected
+  remediation: >-
+    Doceree's anti-abuse layer rejects repetitive ad requests from one source IP.
+    This is the closest thing Doceree has to throttling, and it is NOT signalled
+    with HTTP 429 or a Retry-After header — see
+    rate-limits/doceree-rate-limits.yml.
+  field_inversion_bug: >-
+    On this response the two members are swapped relative to every other
+    observed response: the human-readable sentence is in `errMessage` and the
+    error identifier is in `debugMessage`. A client keying off errMessage will
+    not match this code by identifier.
+  observed:
+    url: https://bidder.doceree.com/v1/adrequest?id=DOC_7jm9j5eqkl0xvc5w
+    fetched: '2026-08-12'
+- id: METHOD_NOT_ALLOWED
+  envelope: platform-json
+  http_status: 405
+  title: Request method not supported for this path
+  remediation: >-
+    The dai.doceree.com paths (/drs/quest, /drs/nEvent, /drs/saveAdBlockInfo,
+    /dop/settings, /dop/getHcpSelfValidation, /dop/updateHcpSelfValidation) are
+    POST-only in the first-party SDK; a GET returns this.
+  observed:
+    url: https://dai.doceree.com/dop/settings?version=1
+    fetched: '2026-08-12'
+    body: '{"timestamp":"2026-08-12 16:52:03.561","code":405,"status":"METHOD_NOT_ALLOWED","message":"Request
+      method ''GET'' not supported"}'
+- id: INTERNAL_SERVER_ERROR
+  envelope: platform-json
+  http_status: 500
+  title: Unhandled server error
+  remediation: >-
+    Observed when POSTing an empty body to /drs/quest. Doceree returns 500
+    rather than a 400 for a malformed/incomplete ad-request payload, so a client
+    cannot distinguish its own bad request from a Doceree outage. Doceree's own
+    SDK treats 5xx as transient and retries with bounded backoff.
+  observed:
+    url: https://dai.doceree.com/drs/quest
+    fetched: '2026-08-12'
+    body: '{"timestamp":1786553523698,"status":500,"error":"Internal Server Error","path":"/drs/quest"}'
+client_error_taxonomy:
+  note: >-
+    Doceree's own iOS SDK enumerates the failure modes it models locally. These
+    are CLIENT-side classifications, not server error codes, but they are the
+    only named error vocabulary Doceree publishes.
+  source: https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/DocereeRequestError.swift
+  DocereeAdRequestError:
+  - failedToCreateRequest
+  - {code: adNotFound, message: Ad not found}
+  - invalidAppKey
+  - adTrackingDisabled
+  - invalidUserProfile
+  - adServerReturnedError
+  - invalidURL
+  - invalidRequest
+  - invalidResponse
+  - {code: nonHTTPResponse, message: URLSession returned a non-HTTP URL response
+      for an ad request}
+  - {code: httpUnsuccessful, message: Ad bidder returned a non-success HTTP status
+      (after retries for transient 5xx)}
+  HcpRequestError:
+  - {code: apiFailed, message: Api Failed}
+  - {code: parsingError, message: Parsing Error}
+  - {code: noScriptFound, message: No script found}
+gaps:
+- No published error reference page on any Doceree-owned host.
+- No RFC 9457 application/problem+json; no `type` URI, no machine-stable error
+  registry.
+- Failures on the ad-serving path are returned as HTTP 200, so status-code-based
+  error handling is silently wrong.
+- errMessage/debugMessage semantics are inverted on at least one real code.
+- The two hosts return two mutually incompatible error envelopes, and the
+  platform envelope itself differs in shape between 405 and 500.

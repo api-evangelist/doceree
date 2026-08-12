@@ -1,9 +1,14 @@
-generated: '2026-08-04'
+generated: '2026-08-12'
 method: probed
 source: live HTTPS probes of every Doceree host in apis.yml
 summary:
-  hosts_probed: 9
+  hosts_probed: 10
   documents_found: 0
+  pointer_emitted: false
+  pointer_note: >-
+    No `type: WellKnown` pointer is wired in apis.yml, and one was REMOVED on
+    2026-08-12. This file documents an absence. A pointer asserts the provider
+    serves that surface; Doceree does not.
   note: >-
     No /.well-known/ discovery document is served from any Doceree host.
     exchange.doceree.com answers HTTP 200 for every /.well-known/* and /llms.txt
@@ -83,3 +88,22 @@ hosts:
   - {path: /.well-known/agent-card.json, status: 404}
   - {path: /.well-known/agent.json, status: 404}
   - {path: /llms.txt, status: 404}
+- host: dai.doceree.com
+  added: '2026-08-12'
+  note: >-
+    Production mobile ad/identity host, discovered 2026-08-12 in Doceree's own
+    iOS SDK source. Live (POST endpoints answer), but serves no discovery
+    document.
+  documents:
+  - {path: /.well-known/security.txt, status: 404}
+  - {path: /.well-known/agent-card.json, status: 404}
+  - {path: /openapi.json, status: 404}
+  - {path: /swagger.json, status: 404}
+non_resolving_hosts:
+  checked: '2026-08-12'
+  note: >-
+    Probed as candidate developer/API hosts; none resolve, so no /.well-known/
+    probe was possible.
+  hosts: [api.doceree.com, developer.doceree.com, developers.doceree.com,
+    docs.doceree.com, mcp.doceree.com, identity.doceree.com,
+    adbserver.doceree.com, dev-bidder.doceree.com, programmatic.doceree.com]

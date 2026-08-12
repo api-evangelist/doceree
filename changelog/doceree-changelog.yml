@@ -1,0 +1,94 @@
+generated: '2026-08-12'
+method: searched
+source: https://github.com/doceree/ios-sdk-new/releases
+docs: https://github.com/doceree/ios-sdk-new/releases
+note: >-
+  Doceree publishes NO API changelog and NO product release notes. doceree.com,
+  support.doceree.com and blog.doceree.com carry no dated release feed, and the
+  ad-serving endpoints are unversioned beyond a static /v1/ path prefix. The
+  only dated, provider-published change record on any Doceree surface is the
+  GitHub Releases feed of its first-party iOS SDK, recorded below. It documents
+  the CLIENT, not the API — but because the SDK is where Doceree's ad-request
+  contract actually changes, it is the closest thing an integrator has to a
+  changelog.
+scope: sdk-only
+scheme: semver
+current_version:
+  released: 6.2.1
+  released_date: '2025-10-10'
+  unreleased_in_repo: 6.3.0
+  unreleased_note: >-
+    DocereeAdSdk.podspec on master declares spec.version 6.3.0, but no 6.3.0 tag,
+    release or CocoaPods trunk publication exists. The repository has moved ahead
+    of every published channel — an integrator following the podspec cannot
+    install what it declares.
+entries:
+- version: 6.2.1
+  date: '2025-10-10'
+  breaking: false
+  highlights: [Small fixes]
+- version: 6.2.0
+  date: '2025-09-29'
+  breaking: true
+  highlights:
+  - Privacy consent integration
+  - Removed Curator API
+  - Segregated adviewed and engagement events
+  note: >-
+    "Removed Curator Api" is a removal with no deprecation notice, no sunset
+    window and no migration guide — the only change record is this one-line
+    release note.
+- version: 6.1.0
+  date: '2025-07-31'
+  breaking: false
+  highlights: [App Config release (remote /dop/settings configuration fetch)]
+- version: 6.0.0
+  date: '2025-05-20'
+  breaking: true
+  highlights: [IAB Open Measurement SDK (OMSDK) support]
+- version: 5.0.7
+  date: '2025-05-14'
+  breaking: false
+  highlights: [Bug fixes in HCP validation]
+- version: 5.0.6
+  date: '2025-04-25'
+  breaking: false
+  highlights: [HCP self-validation bug fixes]
+- version: 5.0.4
+  date: '2025-04-15'
+  breaking: false
+  highlights: [HCP self-validation support in iOS SDK]
+- version: 5.0.3
+  date: '2025-02-12'
+  breaking: false
+  highlights: [Added country params]
+- version: 4.0.0
+  date: '2023-09-14'
+  breaking: true
+  highlights: [Added Display+ feature]
+- version: 5.0.2
+  date: '2023-09-05'
+  breaking: false
+  highlights: [Updated ad-block URL, small fixes]
+- version: 5.0.0
+  date: '2023-08-30'
+  breaking: true
+  highlights: [Ad server updated to Ad-Manager]
+gaps:
+- No API changelog, no dated release notes for the ad-serving endpoints, and no
+  RSS/Atom feed for changes.
+- Release notes are one-line and do not identify breaking changes as such; the
+  `breaking` flags above are read from semver major bumps and removal language,
+  not from a Doceree statement.
+- Version numbering is non-monotonic in the release feed (4.0.0 was published
+  2023-09-14, after 5.0.0 on 2023-08-30).
+- No changelog exists for the web publisher tag or the Prebid.js adapter beyond
+  upstream Prebid.js commit history.
+evidence:
+- url: https://api.github.com/repos/doceree/ios-sdk-new/releases
+  http_status: 200
+  fetched: '2026-08-12'
+- url: https://blog.doceree.com/
+  http_status: 200
+  fetched: '2026-08-12'
+  note: Editorial/marketing blog; carries no release notes.

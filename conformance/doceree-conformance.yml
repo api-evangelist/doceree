@@ -1,10 +1,12 @@
-generated: '2026-08-04'
+generated: '2026-08-12'
 method: searched
 source: >-
   https://docs.prebid.org/dev-docs/bidders/doceree.html,
   https://doceree.com/ (compliance badge row),
   https://doceree.com/trust,
-  https://github.com/doceree/ios-sdk
+  https://github.com/doceree/ios-sdk,
+  https://github.com/doceree/ios-sdk-new (DocereeAdSdk.podspec, OM/, iOS_SDK_Implementation.md),
+  https://support.doceree.com/hc/en-us/articles/7288505026967-What-are-the-viewability-metrics-available-on-the-Doceree-platform
 note: >-
   Doceree is an ad-tech provider, so its conformance surface is the IAB /
   Prebid stack plus healthcare privacy posture rather than API-design
@@ -36,6 +38,42 @@ standards:
     (MRAIDConstants.swift declares MRAIDVersion = "2.0", with MRAID handler,
     delegate, utilities and browser window classes).
   source: https://github.com/doceree/ios-sdk/blob/master/DocereeAdsSdk/MRAIDConstants.swift
+- id: iab-open-measurement-sdk
+  conforms: true
+  version: OMSDK (OMSDK_Doceree.xcframework)
+  evidence: >-
+    The current first-party iOS SDK vendors the IAB Tech Lab Open Measurement
+    SDK as OMSDK_Doceree.xcframework (declared in DocereeAdSdk.podspec
+    vendored_frameworks and linked via OTHER_LDFLAGS), with an OM integration
+    layer in DocereeAdsSdk/OM/ (AdUnit.swift, OMIDSessionInteractor.swift).
+    Added in SDK 6.0.0, released 2025-05-20 with the release note "OMSDK
+    support".
+  source: https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdSdk.podspec
+- id: iab-viewability-measurement
+  conforms: true
+  evidence: >-
+    "Doceree has fully implemented the industry-standard IAB (Interactive
+    Advertising Bureau) guidelines for measuring display ad viewability."
+    Doceree also states it supports custom viewability thresholds and integrates
+    with DoubleVerify and Integral Ad Science (IAS), purchasable through its
+    Marketplace at campaign setup. The ad response carries minViewPercentage and
+    minViewTime members that drive client-side viewability timing.
+  source: https://support.doceree.com/hc/en-us/articles/7288505026967-What-are-the-viewability-metrics-available-on-the-Doceree-platform
+- id: iab-gpp
+  conforms: true
+  evidence: >-
+    The SDK consent model accepts GPP section IDs alongside TCF
+    (DocereeConsentBuilder.setPrivacySid("2,6"), ConsentPayloadKey.pcysid) and
+    falls back to reading IAB TCF/GPP keys from UserDefaults when no consent has
+    been set. Privacy consent integration shipped in SDK 6.2.0 (2025-09-29).
+  source: https://github.com/doceree/ios-sdk-new/blob/master/iOS_SDK_Implementation.md
+- id: ketch-cmp
+  conforms: true
+  evidence: >-
+    The iOS SDK takes a hard dependency on KetchSDK 4.0.3 and ships a consent
+    management UI layer (DocereeAdsSdk/View/KetchView/). Consent capture is
+    delegated to a third-party CMP rather than hand-rolled.
+  source: https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdSdk.podspec
 - id: iab-tech-lab
   conforms: true
   evidence: IAB Tech Lab badge published in the compliance row on doceree.com.
@@ -80,8 +118,15 @@ standards:
   evidence: /.well-known/openid-configuration returns 404 on every Doceree host.
 - id: rfc9457-problem-details
   conforms: false
-  evidence: No error envelope of any kind is published or present in any Doceree
-    client; responses are flat JSON with no error member.
+  evidence: >-
+    Doceree does return structured errors — CORRECTING the 2026-08-04 reading in
+    this repo, which said there was no error envelope at all. There are in fact
+    two, and neither is RFC 9457: an inline {errMessage, debugMessage} pair
+    carried inside an HTTP 200 ad response, and a Spring-style
+    {timestamp, status, error, path} body on dai.doceree.com. No
+    application/problem+json content type and no `type` URI is used anywhere.
+    See errors/doceree-problem-types.yml.
+  source: errors/doceree-problem-types.yml
 - id: rfc9116-security-txt
   conforms: false
   evidence: /.well-known/security.txt returns 404 on every Doceree host.
@@ -93,16 +138,29 @@ standards:
   conforms: false
   evidence: >-
     Probed /openapi.json, /openapi.yaml, /swagger.json, /v1/openapi.json,
-    /api-docs on doceree.com, www.doceree.com, dev.doceree.com,
+    /api-docs, /docs, /redoc on doceree.com, www.doceree.com, dev.doceree.com,
     support.doceree.com, bidder.doceree.com, tracking.doceree.com,
-    servedbydoceree.doceree.com and admanager.doceree.com on 2026-08-04 —
-    all 404 or 403.
+    servedbydoceree.doceree.com and admanager.doceree.com (2026-08-04) and
+    re-probed on 2026-08-12 including the newly-discovered production ad host
+    dai.doceree.com — all 404 or 403. No api.doceree.com, developer.doceree.com,
+    developers.doceree.com or docs.doceree.com host resolves.
+- id: graphql
+  conforms: false
+  evidence: >-
+    No /graphql surface on any Doceree host; nothing in the first-party SDKs or
+    publisher tag issues a GraphQL request.
+- id: mcp
+  conforms: false
+  evidence: >-
+    No hosted or remote MCP server. https://doceree.com/mcp returns 404 and
+    mcp.doceree.com does not resolve (2026-08-12).
 - id: a2a-agent-card
   conforms: false
   evidence: >-
     /.well-known/agent-card.json and /.well-known/agent.json probed on all nine
-    hosts — 404/403 everywhere except exchange.doceree.com, which returns an
-    HTML SPA shell for every path and is rejected as a catch-all.
+    hosts (2026-08-04) plus dai.doceree.com (2026-08-12) — 404/403 everywhere
+    except exchange.doceree.com, which returns an HTML SPA shell for every path
+    and is rejected as a catch-all.
 compliance_program:
   published: true
   url: https://doceree.com/trust

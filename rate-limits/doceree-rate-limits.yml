@@ -1,0 +1,103 @@
+generated: '2026-08-12'
+method: probed
+source: >-
+  live unauthenticated probes of https://bidder.doceree.com/v1/adrequest,
+  https://tracking.doceree.com/v1/hbBidWon and https://dai.doceree.com/*,
+  plus a full read of Doceree's public Zendesk help center
+  (https://support.doceree.com/api/v2/help_center/en-us/articles.json, 117 articles)
+docs: null
+limit_count: 0
+note: >-
+  Doceree publishes no API rate limits, and none were observed at runtime. No
+  RateLimit-*, X-RateLimit-*, Retry-After or equivalent header is returned by any
+  Doceree endpoint, and no help-center article, terms-of-service document or SDK
+  source mentions request quotas or throttling for the ad-serving surface. An
+  agent integrating Doceree has no runtime signal to back off on. Recorded as an
+  honest zero, not an omission.
+limits: []
+undocumented_throttle_observed:
+  id: ErrorIpRepeativeCallRejects
+  detail: >-
+    Doceree DOES reject repeated ad requests from the same source IP, but it
+    signals the rejection inside an HTTP 200 JSON body rather than with a 429.
+    Probing GET https://bidder.doceree.com/v1/adrequest with a real published
+    placement id (DOC_7jm9j5eqkl0xvc5w, the example in the Prebid bidder docs)
+    returned HTTP 200 with {"errMessage":"Ip repetitive call",
+    "debugMessage":"ErrorIpRepeativeCallRejects"} and an empty ad payload.
+  scope: per source IP
+  window: undocumented
+  limit: undocumented
+  status_code: 200
+  retry_after: false
+  consequence: >-
+    This is an anti-abuse throttle with no discoverable threshold, no header, no
+    429 and no Retry-After. A client cannot back off correctly because it is
+    given nothing to back off against, and a client that checks only the HTTP
+    status will treat a throttled request as a successful no-bid.
+  cross_ref: errors/doceree-problem-types.yml
+  observed:
+    url: https://bidder.doceree.com/v1/adrequest?id=DOC_7jm9j5eqkl0xvc5w
+    fetched: '2026-08-12'
+observed_headers:
+  rate_limit_headers: none
+  retry_after: false
+  detail: >-
+    Response headers on GET https://bidder.doceree.com/v1/adrequest are limited
+    to date, content-type, content-length, access-control-allow-credentials,
+    access-control-allow-headers, access-control-allow-origin and vary. The
+    tracking beacon adds only server: Tracking Server and
+    access-control-allow-origin: *. No throttling header of any kind is present.
+exhaustion_behavior:
+  status_code: null
+  detail: >-
+    Not observed. Twenty consecutive unauthenticated GETs to
+    https://bidder.doceree.com/v1/adrequest inside two seconds all returned
+    HTTP 200 with an application/json body; no 429 and no degradation. This does
+    not prove there is no limit — only that none was reached or signalled.
+client_side_retry:
+  documented: true
+  detail: >-
+    Doceree's own first-party iOS SDK implements bounded retry with backoff
+    (DocereeHTTPTransportRetry.maxAttempts, backoffNanoseconds), retrying
+    transient 5xx responses and common URLError conditions for both the ad
+    request and the app-configuration call. This is client policy shipped by the
+    provider, not a server-advertised limit, but it is the only backoff contract
+    Doceree publishes.
+  source: >-
+    https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Utilities/HTTPSupport.swift,
+    https://github.com/doceree/ios-sdk-new/blob/master/DocereeAdsSdk/Services/Configuration/ConfigurationService.swift
+not_a_rate_limit:
+- name: frequency capping
+  detail: >-
+    Doceree documents frequency capping — a cap on how many impressions an
+    individual HCP sees from a campaign per day/week/month. This is a media
+    delivery control on the buyer side, NOT an API rate limit, and must not be
+    read as one. See plans/doceree-plans-pricing.yml.
+  source: https://support.doceree.com/hc/en-us/articles/9520824760983-What-is-frequency-capping
+- name: daily/weekly spend limits
+  detail: >-
+    Programmatic campaigns accept a daily or weekly spend limit that the bidding
+    algorithm optimizes against. A budget cap, not a request cap.
+evidence:
+- url: https://bidder.doceree.com/v1/adrequest?id=DOC_test
+  http_status: 200
+  fetched: '2026-08-12'
+  note: 20 rapid consecutive requests, all 200, no rate-limit headers returned.
+- url: https://tracking.doceree.com/v1/hbBidWon?data=e30=&adp=prebid
+  http_status: 200
+  fetched: '2026-08-12'
+  note: Returns a 42-byte image/gif beacon; no rate-limit headers.
+- url: https://dai.doceree.com/dop/settings?version=1
+  http_status: 405
+  fetched: '2026-08-12'
+  note: >-
+    Method-not-allowed JSON error on the current mobile ad host; no rate-limit
+    headers on the error response either.
+gaps:
+- No published rate limit, quota or burst allowance for any endpoint.
+- No RateLimit-* / X-RateLimit-* / Retry-After header on any response.
+- No documented 429 behaviour, so a client cannot distinguish throttling from an
+  outage.
+- 'A real IP-based throttle exists but is undocumented and is returned as HTTP
+  200 — the worst of both worlds: enforced, but invisible to standard client
+  tooling.'
