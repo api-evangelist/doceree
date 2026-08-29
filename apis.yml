@@ -19,6 +19,19 @@ description: 'Doceree Inc. is a US healthcare marketing technology company (Shor
   A2A agent card at any probed host as of August 2026, and no /.well-known/
   document on any host.'
 url: https://raw.githubusercontent.com/api-evangelist/doceree/refs/heads/main/apis.yml
+deliveryModel:
+  model: open-core
+  license: Apache-2.0
+  open_source: true
+  commercial: true
+  callable_host: false
+  label: Open core · an OSS project plus a commercial hosted product
+  confidence: high
+  source:
+  - license
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://doceree.com/images/doceree-logo.svg
 x-type: company
 x-source: harvest:secondary-market
