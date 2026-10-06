@@ -53,7 +53,7 @@ x-source: harvest:secondary-market
 x-harvest-source-url: https://forgeglobal.com/doceree_stock/
 specificationVersion: '0.23'
 created: '2026-08-04'
-modified: '2026-08-12'
+modified: '2026-10-06'
 tags:
 - Advertising
 - Healthcare
@@ -165,6 +165,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- url: https://blog.doceree.com/rss.xml
+  type: BlogRSS
 - type: TrustCenter
   url: security/doceree-trust-center.yml
 - type: IssueTracker
