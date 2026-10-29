@@ -64,37 +64,107 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Doceree Inc. is a US healthcare marketing technology company (Short Hills, New Jersey) operating a
-global network of physician-only platforms for programmatic messaging and point-of-care advertising
-to healthcare professionals. Its channels span HCP programmatic, point-of-care, EHR, email, SMS,
-co-pay/affordability and account-based messaging, backed by a proprietary HCP identity-resolution
-graph.
+Doceree Inc. is a US healthcare marketing technology company (Short Hills, New Jersey) operating a global network of physician-only platforms for programmatic messaging and point-of-care advertising to healthcare professionals. Its platform spans HCP programmatic, point-of-care, EHR, email, SMS, co-pay/affordability and account-based messaging channels, backed by a proprietary HCP identity-resolution graph. Doceree's public, machine-readable surface is an advertising-technology one rather than a general-purpose developer API: a versioned ad-request/bidder endpoint (bidder.doceree.com/v1/adrequest), a tracking/beacon endpoint (tracking.doceree.com), a hosted publisher tag (the Doceree Publisher Tag, servedbydoceree.doceree.com/script/render-header.js), a first-party Prebid.js header-bidding adapter (bidder code "doceree", IAB Europe GVL ID 1063), and first-party mobile ad SDKs for iOS (CocoaPods) and Android (JitPack). A second, newer ad-serving generation runs concurrently on dai.doceree.com (POST /drs/* and /dop/*, unversioned) and is used by the iOS SDK 6.x; it carries clinical session, patient, prescription and action-event attributes onto the ad request itself. Doceree publishes no OpenAPI, AsyncAPI, GraphQL schema, MCP server or A2A agent card at any probed host as of August 2026, and no /.well-known/ document on any host.
 
-## Public API surface
+**Areas:** Advertising · Healthcare · Marketing · AdTech · Programmatic · Header Bidding · Life Sciences · Pharmaceuticals · Point of Care · Identity Resolution · Electronic Health Records · Company
 
-Doceree's public, machine-readable surface is an ad-tech one rather than a general-purpose developer
-API. There is **no OpenAPI, AsyncAPI, GraphQL schema, MCP server or A2A agent card** at any host
-probed on 2026-08-04. What is public:
+## Doceree on APIs.io
 
-| Surface | Where |
+Everything profiled for Doceree is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/doceree/](https://apis.io/providers/doceree/)** — or go straight to one of the APIs or properties below.
+
+### APIs (3)
+
+- [Doceree Bidder / Ad Request API](https://apis.io/apis/doceree/bidder/) — The ad-request surface Doceree publisher partners call to fetch an HCP-targeted advertisement. It is the endpoint behind the Doceree Publisher Tag, the…
+- [Doceree Tracking API](https://apis.io/apis/doceree/tracking/) — Doceree's measurement and beacon endpoint. The Prebid.js adapter fires GET /v1/hbTimeout and GET /v1/hbBidWon with a base64-encoded, URI-encoded JSON…
+- [Doceree DAI Mobile Ad + Identity API](https://apis.io/apis/doceree/dai/) — The current mobile ad-serving, identity and clinical-session surface, used by the Doceree iOS SDK 6.x. Discovered 2026-08-12 by reading Doceree's own…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Doceree Authentication](https://apis.io/security/doceree/doceree-authentication/)
+- [Doceree Domain Security](https://apis.io/security/doceree/doceree-domain-security/)
+- [Doceree Trust Center](https://apis.io/security/doceree/doceree-trust-center/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Doceree Plans Pricing](https://apis.io/plans/doceree/doceree-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Doceree Rate Limits](https://apis.io/rate-limits/doceree/doceree-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://doceree.com/)
+- [Documentation](https://support.doceree.com/hc/en-us)
+- [API reference](https://docs.prebid.org/dev-docs/bidders/doceree.html)
+- [Support](https://support.doceree.com/hc/en-us)
+- [Blog](https://blog.doceree.com/)
+- [Compliance](https://doceree.com/trust)
+- [Terms of service](https://doceree.com/us-terms-of-service-advertiser)
+- [Privacy policy](https://doceree.com/privacy-policy)
+- [GitHub](https://github.com/doceree)
+
+## API Evangelist rating
+
+**Kin Score 36.6** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
 |---|---|
-| Bidder / ad request API | `https://bidder.doceree.com` — `GET /v1/adrequest` |
-| Tracking / beacon API | `https://tracking.doceree.com` — `GET /v1/hbTimeout`, `GET /v1/hbBidWon` |
-| Doceree Publisher Tag | https://servedbydoceree.doceree.com/script/render-header.js |
-| Prebid.js header-bidding adapter | bidder code `doceree`, IAB Europe GVL ID 1063 |
-| iOS ad SDK | CocoaPods `DocereeAdSdk`; sources at https://github.com/doceree/ios-sdk (MIT) |
-| Android ad SDK | documented via JitPack; coordinates behind a sign-in-gated support article |
+| Discoverability | 71.4 |
+| Contract quality | 0.0 |
+| Contract governance | 18.2 |
+| Operational transparency | 18.4 |
+| Developer ergonomics | 59.5 |
+| Access clarity | 43.4 |
 
-The fullest public parameter reference is the
-[Prebid.js bidder documentation](https://docs.prebid.org/dev-docs/bidders/doceree.html).
+**Agent readiness 7.9** — agent-aware
 
-## Links
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | — |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
 
-- Website — https://doceree.com/
-- Publishers / integration — https://doceree.com/publishers
-- Support / help center — https://support.doceree.com/hc/en-us
-- Trust & compliance — https://doceree.com/trust
-- Blog — https://blog.doceree.com/
-- GitHub — https://github.com/doceree
-- Exchange login — https://exchange.doceree.com/login
-- Harvest lead (secondary market) — https://forgeglobal.com/doceree_stock/
+**Regulatory alignment 28.9** — Health
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/doceree/](https://apis.io/providers/doceree/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Doceree: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/doceree/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
